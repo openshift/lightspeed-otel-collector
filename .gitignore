@@ -1,0 +1,16 @@
+# Build artifacts
+dist/
+dist-router/
+bin/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Local config (may contain credentials)
+config-local.yaml
+
+# OS
+.DS_Store

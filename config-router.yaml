@@ -1,0 +1,129 @@
+# Router configuration.
+# Routes telemetry to different destinations based on signal type and attributes.
+#
+# Routing rules:
+#   - Logs   → routed by service.name to PostgreSQL or a downstream collector
+#   - Traces → routed by service.name to tracing backend
+#   - Metrics → no pipeline defined, silently dropped
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+        tls:
+          cert_file: /var/run/secrets/serving-cert/tls.crt
+          key_file: /var/run/secrets/serving-cert/tls.key
+      http:
+        endpoint: 0.0.0.0:4318
+        tls:
+          cert_file: /var/run/secrets/serving-cert/tls.crt
+          key_file: /var/run/secrets/serving-cert/tls.key
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 100
+
+# Exporters define all possible destinations. Each exporter listed here can be
+# referenced by one or more pipelines below. If you add a new exporter for
+# logs or traces, add a routing condition to direct traffic to it — otherwise
+# unmatched records are dropped (logs) or forwarded to the shared backend (traces).
+exporters:
+  # Lightspeed logs → PostgreSQL.
+  postgres:
+    connection_string: "postgres://otel:otel@postgres.db.svc:5432/oteldb?sslmode=require"
+    schema: templogs
+    logs_table: logs
+    retry_on_failure:
+      enabled: true
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: 1000
+      storage: file_storage
+
+   # Traces → external tracing backend (set endpoint to your Jaeger/Tempo/etc).
+  otlp/tracing:
+    endpoint: ${env:TRACES_BACKEND_ENDPOINT}
+    tls:
+      insecure: false
+
+  # Debug — prints to stdout (remove in production).
+  debug:
+    verbosity: basic
+
+# Routing connectors evaluate OTTL conditions on each record and send it
+# to the matching sub-pipeline. Unmatched records go to default_pipelines.
+# Add/remove conditions here to control which services write to PostgreSQL.
+connectors:
+  routing/logs:
+    # No generic logs destination exists, so unmatched logs are dropped (debug).
+    # To forward unmatched logs elsewhere, replace logs/unmatched exporter with
+    # an otlp exporter pointing to a central logging backend.
+    default_pipelines: [logs/unmatched]
+    table:
+      # Only Lightspeed components write audit logs to PostgreSQL.
+      - condition: attributes["service.name"] == "lightspeed-service"
+        pipelines: [logs/postgres]
+
+  routing/traces:
+    # Unlike logs, a shared tracing backend exists, so all traces (including
+    # unmatched) are forwarded there by default.
+    default_pipelines: [traces/lightspeed]
+    table:
+      # All traces go to the tracing backend. Add conditions here if you
+      # need to route specific services differently in the future.
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  postgres_admin:
+    endpoint: 0.0.0.0:8080
+    connection_string: "postgres://otel:otel@postgres.db.svc:5432/oteldb?sslmode=require"
+    schema: templogs
+    logs_table: logs
+    tls_cert_file: /var/run/secrets/serving-cert/tls.crt
+    tls_key_file: /var/run/secrets/serving-cert/tls.key
+
+  file_storage:
+    directory: /var/lib/otelcol/file_storage
+    create_directory: true
+    compaction:
+      on_start: true
+      directory: /var/lib/otelcol/file_storage/compaction
+
+service:
+  extensions: [health_check, file_storage, postgres_admin]
+
+  pipelines:
+    # --- Logs ---
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [routing/logs]
+
+    logs/postgres:
+      receivers: [routing/logs]
+      exporters: [postgres]
+
+    logs/unmatched:
+      receivers: [routing/logs]
+      exporters: [debug]
+
+    # --- Traces ---
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [routing/traces]
+
+    traces/lightspeed:
+      receivers: [routing/traces]
+      exporters: [otlp/tracing]
+
+    # --- Metrics: no pipeline defined → silently dropped ---
+
+  telemetry:
+    logs:
+      level: info

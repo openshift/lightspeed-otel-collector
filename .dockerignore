@@ -1,0 +1,11 @@
+dist/
+dist-router/
+bin/
+.idea/
+.git/
+*.md
+deploy/
+config.yaml
+config-local.yaml
+.gitignore
+.coderabbit.yaml

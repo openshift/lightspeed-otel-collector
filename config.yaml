@@ -1,0 +1,74 @@
+# Collector configuration reference.
+# All available fields are shown with their defaults.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+        tls:
+          cert_file: /var/run/secrets/serving-cert/tls.crt
+          key_file: /var/run/secrets/serving-cert/tls.key
+      http:
+        endpoint: 0.0.0.0:4318
+        tls:
+          cert_file: /var/run/secrets/serving-cert/tls.crt
+          key_file: /var/run/secrets/serving-cert/tls.key
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 100
+
+exporters:
+  postgres:
+    # Required. PostgreSQL DSN. Pool tuning via DSN params:
+    # ?pool_max_conns=10&pool_max_conn_idle_time=5m
+    connection_string: "postgres://otel:otel@localhost:5432/oteldb?sslmode=require"
+    schema: templogs          # default: templogs
+    logs_table: logs          # default: logs
+
+    retry_on_failure:
+      enabled: true           # default: true
+      initial_interval: 1s
+      max_interval: 30s
+      max_elapsed_time: 5m
+
+    sending_queue:
+      enabled: true           # default: true
+      num_consumers: 4
+      queue_size: 1000
+      storage: file_storage
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  postgres_admin:
+    endpoint: 0.0.0.0:8080    # default: 0.0.0.0:8080
+    connection_string: "postgres://otel:otel@localhost:5432/oteldb?sslmode=require"
+    schema: templogs          # default: templogs
+    logs_table: logs          # default: logs
+    # TLS serving cert (required in production, omit for local dev):
+    tls_cert_file: /var/run/secrets/serving-cert/tls.crt
+    tls_key_file: /var/run/secrets/serving-cert/tls.key
+
+  file_storage:
+    directory: /var/lib/otelcol/file_storage
+    create_directory: true
+    compaction:
+      on_start: true
+      directory: /var/lib/otelcol/file_storage/compaction
+
+service:
+  extensions: [health_check, file_storage, postgres_admin]
+
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [postgres]
+
+  telemetry:
+    logs:
+      level: info

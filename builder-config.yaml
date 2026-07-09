@@ -1,0 +1,53 @@
+# OCB (OpenTelemetry Collector Builder) manifest.
+# Defines which components are compiled into the custom Collector binary.
+# Only the components listed here are included — keeps the binary small
+# and the attack surface minimal.
+#
+# Build: ocb --config=builder-config.yaml
+# Output: ./dist/otelcol-lightspeed
+
+dist:
+  module: github.com/openshift/lightspeed-otel-collector
+  name: otelcol-lightspeed
+  description: Custom OTel Collector for OpenShift Lightspeed
+  output_path: ./dist
+  otelcol_version: 0.155.0
+
+exporters:
+  # Custom PostgreSQL exporter — writes OTLP log records to PostgreSQL.
+  - gomod: github.com/openshift/lightspeed-otel-collector/postgresexporter v0.0.0
+    path: ./postgresexporter
+
+  # Standard OTLP exporter — forwards telemetry to downstream collectors via gRPC.
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.155.0
+
+  # OTLP HTTP exporter — for destinations that only accept HTTP.
+  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.155.0
+
+  # Debug exporter — logs data to stdout, useful for development.
+  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.155.0
+
+receivers:
+  # OTLP receiver — accepts telemetry from apps via gRPC and HTTP.
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.155.0
+
+processors:
+  # Batch processor — accumulates logs before forwarding to the exporter.
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.155.0
+
+connectors:
+  # Routing connector — routes telemetry to different pipelines based on
+  # resource attributes, log attributes, or other conditions via OTTL.
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/connector/routingconnector v0.155.0
+
+extensions:
+  # Health check — exposes HTTP endpoint on :13133 for Kubernetes probes.
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.155.0
+
+  # File storage — persists the exporter's sending queue to disk so in-flight
+  # data survives pod restarts. Backed by bbolt (embedded key-value store).
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/filestorage v0.155.0
+
+  # Postgres admin — HTTP API for log retrieval and deletion by trace_id.
+  - gomod: github.com/openshift/lightspeed-otel-collector/extension/postgresadmin v0.0.0
+    path: ./extension/postgresadmin
