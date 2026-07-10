@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit — OpenShift Lightspeed OTel Collector
+# Docs: https://docs.coderabbit.ai/guides/configure-coderabbit
+language: en-US
+
+reviews:
+  profile: chill
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+    ignore_title_keywords:
+      - WIP
+      - DO NOT MERGE
+
+  path_filters:
+    - '!go.sum'
+    - '!**/go.sum'
+    - '!vendor/**'
+    - '!dist/**'
+    - '!cover.out'
+    - '!**/*.log'
+
+  path_instructions:
+    - path: 'postgresexporter/**/*.go'
+      instructions: |
+        - This is a custom OTel Collector exporter writing OTLP log records to PostgreSQL via pgx/v5.
+        - Uses a single multi-value INSERT per batch (inherently atomic, no explicit transaction).
+        - Pool interface abstraction for testability with pgxmock.
+        - Config validates schema/table as SQL identifiers (alphanumeric + underscore only).
+        - Connection string supports env var expansion and must use sslmode=require in production.
+    - path: 'extension/postgresadmin/**/*.go'
+      instructions: |
+        - HTTPS admin extension providing GET (cursor-paginated) and DELETE endpoints for log records by trace_id.
+        - Uses TLS serving cert (service-ca in OpenShift) via tls_cert_file/tls_key_file config fields.
+        - Pool interface abstraction for testability with pgxmock.
+        - Strict input validation: invalid limit/after params return 400, not silently defaulted.
+    - path: '**/*_test.go'
+      instructions: |
+        - Tests use pgxmock/v4 for database interaction testing without a real PostgreSQL instance.
+        - Contributors run `make test`, not bare `go test`.
+    - path: 'config*.yaml'
+      instructions: |
+        - Runtime configuration files for the OTel Collector.
+        - All communication channels must use TLS (OTLP receiver, admin API, PostgreSQL, trace export).
+        - PostgreSQL DSN must use sslmode=require (not sslmode=disable).
+    - path: 'Dockerfile'
+      instructions: |
+        - Multi-stage UBI9 build: go-toolset builder stage + ubi-minimal runtime.
+        - Must remain compatible with Konflux hermetic builds (cachi2 prefetch for Go modules).
+        - Runs as non-root (UID 65532).
+    - path: '**/*.md'
+      instructions: |
+        - Cross-check commands and architecture descriptions against .ai/spec/ and CLAUDE.md.
+
+  collapse_walkthrough: true
+  poem: false
+  high_level_summary: true
+  review_status: true
+  commit_status: true
+  sequence_diagrams: true
+  suggested_labels: false
+
+  tools:
+    golangci-lint:
+      enabled: true
+    gitleaks:
+      enabled: true
+
+chat:
+  auto_reply: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - CLAUDE.md
+  learnings:
+    scope: local
