@@ -1,0 +1,9 @@
+approvers:
+  - bparees
+  - xrajesh
+  - joshuawilson
+  - raptorsun
+  - blublinsky
+  - onmete
+# Anyone in the OpenShift org can /lgtm a PR, so leaving this empty.
+reviewers:
