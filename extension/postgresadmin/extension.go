@@ -108,6 +108,12 @@ func (p *postgresAdmin) Shutdown(ctx context.Context) error {
 
 // --- GET /api/v1/logs?trace_id=<value>&limit=100&after=12345 ---
 
+func writeJSON(w http.ResponseWriter, v any) {
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+	}
+}
+
 type logRecord struct {
 	ID        int64           `json:"id"`
 	Timestamp time.Time       `json:"timestamp"`
@@ -129,7 +135,7 @@ func (p *postgresAdmin) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 
 	if traceID == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(getResponse{
+		writeJSON(w, getResponse{
 			Error: "'trace_id' query parameter is required",
 		})
 		return
@@ -140,7 +146,7 @@ func (p *postgresAdmin) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 		parsed, err := strconv.Atoi(v)
 		if err != nil || parsed < 1 {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(getResponse{
+			writeJSON(w, getResponse{
 				Error: "'limit' must be a positive integer",
 			})
 			return
@@ -156,7 +162,7 @@ func (p *postgresAdmin) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 		parsed, err := strconv.ParseInt(v, 10, 64)
 		if err != nil || parsed < 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(getResponse{
+			writeJSON(w, getResponse{
 				Error: "'after' must be a non-negative integer",
 			})
 			return
@@ -176,7 +182,7 @@ func (p *postgresAdmin) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 			zap.Error(err),
 		)
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(getResponse{
+		writeJSON(w, getResponse{
 			Error:   "query failed; check collector logs",
 			TraceID: traceID,
 		})
@@ -191,7 +197,7 @@ func (p *postgresAdmin) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&rec.ID, &rec.Timestamp, &rec.Event, &body); err != nil {
 			p.logger.Error("postgres_admin: row scan failed", zap.Error(err))
 			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(getResponse{
+			writeJSON(w, getResponse{
 				Error:   "failed to read results; check collector logs",
 				TraceID: traceID,
 			})
@@ -203,7 +209,7 @@ func (p *postgresAdmin) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 	if err := rows.Err(); err != nil {
 		p.logger.Error("postgres_admin: rows iteration failed", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(getResponse{
+		writeJSON(w, getResponse{
 			Error:   "failed to read results; check collector logs",
 			TraceID: traceID,
 		})
@@ -216,7 +222,7 @@ func (p *postgresAdmin) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(getResponse{
+	writeJSON(w, getResponse{
 		TraceID: traceID,
 		Records: records,
 		HasMore: hasMore,
@@ -238,7 +244,7 @@ func (p *postgresAdmin) handleDeleteLogs(w http.ResponseWriter, r *http.Request)
 
 	if traceID == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(deleteResponse{
+		writeJSON(w, deleteResponse{
 			Error: "'trace_id' query parameter is required",
 		})
 		return
@@ -253,7 +259,7 @@ func (p *postgresAdmin) handleDeleteLogs(w http.ResponseWriter, r *http.Request)
 			zap.Error(err),
 		)
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(deleteResponse{
+		writeJSON(w, deleteResponse{
 			Error:   "delete query failed; check collector logs",
 			TraceID: traceID,
 		})
@@ -268,7 +274,7 @@ func (p *postgresAdmin) handleDeleteLogs(w http.ResponseWriter, r *http.Request)
 	)
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(deleteResponse{
+	writeJSON(w, deleteResponse{
 		Deleted: rowsAffected,
 		TraceID: traceID,
 	})

@@ -1,6 +1,6 @@
 module github.com/openshift/lightspeed-otel-collector/postgresexporter
 
-go 1.25.9
+go 1.25.8
 
 require (
 	github.com/jackc/pgx/v5 v5.10.0
