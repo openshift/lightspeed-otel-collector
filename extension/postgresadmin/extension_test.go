@@ -47,7 +47,9 @@ func TestHandleDeleteLogsMissingTraceID(t *testing.T) {
 	}
 
 	var resp deleteResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
 	if resp.Error == "" {
 		t.Error("expected error message in response")
 	}
@@ -70,7 +72,9 @@ func TestHandleDeleteLogsSuccess(t *testing.T) {
 	}
 
 	var resp deleteResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
 	if resp.Deleted != 5 {
 		t.Errorf("expected 5 deleted, got %d", resp.Deleted)
 	}
@@ -100,7 +104,9 @@ func TestHandleDeleteLogsZeroRows(t *testing.T) {
 	}
 
 	var resp deleteResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
 	if resp.Deleted != 0 {
 		t.Errorf("expected 0 deleted, got %d", resp.Deleted)
 	}
@@ -136,7 +142,9 @@ func TestHandleGetLogsMissingTraceID(t *testing.T) {
 	}
 
 	var resp getResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
 	if resp.Error == "" {
 		t.Error("expected error message in response")
 	}
@@ -166,7 +174,9 @@ func TestHandleGetLogsSuccess(t *testing.T) {
 	}
 
 	var resp getResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
 	if len(resp.Records) != 2 {
 		t.Errorf("expected 2 records, got %d", len(resp.Records))
 	}
@@ -206,7 +216,9 @@ func TestHandleGetLogsWithPagination(t *testing.T) {
 	}
 
 	var resp getResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
 	if len(resp.Records) != 2 {
 		t.Errorf("expected 2 records (trimmed), got %d", len(resp.Records))
 	}
