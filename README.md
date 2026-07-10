@@ -3,10 +3,16 @@
 Custom OpenTelemetry Collector distribution for OpenShift Lightspeed.
 Receives OTLP logs over TLS and writes them to PostgreSQL.
 
-```
-App --OTLP/TLS--> receiver --> batch processor --> postgresexporter --> PostgreSQL (TLS)
+Audit events are emitted to **both** stdout (for `kubectl logs` / cluster logging)
+and the Collector (for structured persistence). The Collector does not replace
+stdout — it runs alongside it.
 
-App ---------- GET/DELETE /api/v1/logs (HTTPS) --> postgres_admin --> PostgreSQL (TLS)
+```
+                  ┌──→ stdout (always, for kubectl logs / cluster logging)
+App (audit event) ┤
+                  └──→ OTLP/TLS → Collector → batch → postgresexporter → PostgreSQL (TLS)
+
+App ── GET/DELETE /api/v1/logs (HTTPS) ──→ postgres_admin → PostgreSQL (TLS)
 ```
 
 ## Project Structure
@@ -51,6 +57,59 @@ make build
 # Run tests
 make test
 ```
+
+## Emitting Audit Events (Python Example)
+
+The agentic sandbox emits each audit event to **both** stdout and the Collector.
+This is configured at the logger level — individual log statements don't change.
+
+The trace ID comes from the `traceparent` HTTP header sent by the operator with
+each request. A FastAPI middleware extracts it into the OTel context, and the
+`LoggingHandler` automatically attaches it to every log record emitted during
+that request:
+
+```python
+# app.py — logger + OTel setup (runs once at import time)
+import logging
+import os
+
+from opentelemetry.exporter.otlp.proto.grpc.log_exporter import OTLPLogExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.propagate import set_global_textmap
+from opentelemetry.propagators.textmap import TraceContextTextMapPropagator
+
+# W3C traceparent propagation — extracts trace_id from incoming headers
+set_global_textmap(TraceContextTextMapPropagator())
+TracerProvider()  # needed for context propagation
+
+# OTel log exporter → Collector
+provider = LoggerProvider()
+provider.add_log_record_processor(
+    BatchLogRecordProcessor(
+        OTLPLogExporter(endpoint=os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"], insecure=False)
+    )
+)
+otel_handler = LoggingHandler(level=logging.INFO, logger_provider=provider)
+
+# Configure logger with BOTH handlers
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+logging.getLogger().addHandler(otel_handler)
+
+# Instrument FastAPI — automatically extracts traceparent from incoming requests
+# and sets the active trace context for the duration of each request
+app = FastAPI()
+FastAPIInstrumentor.instrument_app(app)
+```
+
+With this setup, every existing `logger.info(...)` call in the request path
+automatically carries the `trace_id` from the operator's `traceparent` header.
+No per-statement changes needed.
+
+The `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable is always set by the
+operator on agentic pods (e.g. `https://otelcol-lightspeed.namespace.svc:4317`).
 
 ## Log Record Schema
 

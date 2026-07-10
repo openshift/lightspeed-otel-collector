@@ -2,6 +2,8 @@
 
 Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTelemetry Collector Builder (OCB).
 
+The Collector receives audit events via OTLP and persists them to PostgreSQL. It does **not** replace stdout logging — applications emit to both stdout (for `kubectl logs` / cluster logging) and the Collector (for structured persistence) simultaneously.
+
 ## Behavioral Rules
 
 ### Build
