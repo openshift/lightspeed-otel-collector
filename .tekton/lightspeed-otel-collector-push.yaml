@@ -9,7 +9,7 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push" &&
       target_branch == "main" &&
-      (".tekton/lightspeed-otel-collector-push.yaml".pathChanged() || "Dockerfile".pathChanged() || "LICENSE".pathChanged() || "go.*".pathChanged() || "postgresexporter/***".pathChanged() || "extension/***".pathChanged() || "builder-config.yaml".pathChanged() || "Makefile".pathChanged())
+      (".tekton/lightspeed-otel-collector-push.yaml".pathChanged() || "Dockerfile".pathChanged() || "LICENSE".pathChanged() || "go.*".pathChanged() || "postgresexporter/***".pathChanged() || "extension/***".pathChanged() || "cmd/***".pathChanged() || "builder-config.yaml".pathChanged() || "Makefile".pathChanged())
   creationTimestamp:
   labels:
     appstudio.openshift.io/application: ols
@@ -24,7 +24,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-otel-collector:{{revision}}
+    value: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/lightspeed-otel-collector:{{revision}}
   - name: build-platforms
     value:
     - linux/x86_64
@@ -32,7 +32,7 @@ spec:
   - name: dockerfile
     value: Dockerfile
   - name: prefetch-input
-    value: '{"type": "gomod", "path": "."}'
+    value: '{"type": "gomod", "path": "cmd/otelcol-lightspeed"}'
   - name: build-source-image
     value: "true"
   - name: hermetic

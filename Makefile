@@ -47,17 +47,32 @@ vet: ## Run go vet.
 
 ##@ Build
 
+GENDIR = cmd/otelcol-lightspeed
+
+.PHONY: generate
+generate: ocb ## Generate collector source code (commit for hermetic CI builds).
+	$(OCB) --skip-compilation --config=builder-config.yaml
+	@echo "Generated source in $(GENDIR)/ — commit this directory."
+
+.PHONY: verify-generate
+verify-generate: generate ## Verify generated source is up to date.
+	@if [ -n "$$(git diff --name-only $(GENDIR)/)" ]; then \
+		echo "ERROR: $(GENDIR)/ is out of date. Run 'make generate' and commit."; \
+		git diff --stat $(GENDIR)/; \
+		exit 1; \
+	fi
+
 .PHONY: build
 build: ocb ## Build the collector binary.
 	$(OCB) --config=builder-config.yaml
 
 .PHONY: run
 run: build ## Build and run the collector locally.
-	./dist/otelcol-lightspeed --config=config.yaml
+	./$(GENDIR)/otelcol-lightspeed --config=config.yaml
 
 .PHONY: clean
 clean: ## Remove build artifacts.
-	rm -rf dist/
+	rm -rf $(GENDIR)/otelcol-lightspeed
 
 ##@ Container
 

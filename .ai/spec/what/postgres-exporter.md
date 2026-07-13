@@ -35,7 +35,7 @@ Custom OTel Collector exporter that writes OTLP log records to PostgreSQL.
 
 11. The exporter does not drop log records silently. If a write fails, the export call returns an error.
 12. The Collector's retry and queue mechanisms handle transient failures (Postgres restarts, network blips).
-13. If the `templogs.logs` table does not exist (schema not bootstrapped), inserts fail with a Postgres error. The exporter surfaces this as an export error — it does not create tables.
+13. The `postgres_admin` extension creates the schema, table, and indexes on startup using `IF NOT EXISTS` (idempotent). Extensions start before pipelines in the OTel Collector lifecycle, so the table is guaranteed to exist before the exporter writes its first batch. If the table is missing at insert time (edge case), the exporter surfaces this as an export error and the Collector's `retry_on_failure` mechanism retries with backoff.
 
 ### Configuration
 

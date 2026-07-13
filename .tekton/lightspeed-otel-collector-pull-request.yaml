@@ -10,7 +10,7 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "pull_request" &&
       target_branch == "main" &&
-      (".tekton/lightspeed-otel-collector-pull-request.yaml".pathChanged() || "Dockerfile".pathChanged() || "LICENSE".pathChanged() || "go.*".pathChanged() || "postgresexporter/***".pathChanged() || "extension/***".pathChanged() || "builder-config.yaml".pathChanged() || "Makefile".pathChanged())
+      (".tekton/lightspeed-otel-collector-pull-request.yaml".pathChanged() || "Dockerfile".pathChanged() || "LICENSE".pathChanged() || "go.*".pathChanged() || "postgresexporter/***".pathChanged() || "extension/***".pathChanged() || "cmd/***".pathChanged() || "builder-config.yaml".pathChanged() || "Makefile".pathChanged())
   creationTimestamp:
   labels:
     appstudio.openshift.io/application: ols
@@ -23,13 +23,13 @@ spec:
   - name: build-source-image
     value: "true"
   - name: prefetch-input
-    value: '{"type": "gomod", "path": "."}'
+    value: '{"type": "gomod", "path": "cmd/otelcol-lightspeed"}'
   - name: git-url
     value: '{{source_url}}'
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-otel-collector:on-pr-{{revision}}
+    value: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/lightspeed-otel-collector:on-pr-{{revision}}
   - name: image-expires-after
     value: 5d
   - name: build-platforms

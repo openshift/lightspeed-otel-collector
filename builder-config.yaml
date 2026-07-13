@@ -4,13 +4,13 @@
 # and the attack surface minimal.
 #
 # Build: ocb --config=builder-config.yaml
-# Output: ./dist/otelcol-lightspeed
+# Output: ./cmd/otelcol-lightspeed/otelcol-lightspeed
 
 dist:
   module: github.com/openshift/lightspeed-otel-collector
   name: otelcol-lightspeed
   description: Custom OTel Collector for OpenShift Lightspeed
-  output_path: ./dist
+  output_path: ./cmd/otelcol-lightspeed
   otelcol_version: 0.155.0
 
 exporters:

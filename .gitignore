@@ -1,6 +1,5 @@
 # Build artifacts
-dist/
-dist-router/
+cmd/otelcol-lightspeed/otelcol-lightspeed
 bin/
 
 # IDE

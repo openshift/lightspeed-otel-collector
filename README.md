@@ -13,6 +13,10 @@ App ---------- GET/DELETE /api/v1/logs (HTTPS) --> postgres_admin --> PostgreSQL
 
 ```
 ├── builder-config.yaml              # OCB manifest — defines included components
+├── cmd/otelcol-lightspeed/          # Pre-generated Collector source (committed)
+│   ├── main.go                      # Generated entry point
+│   ├── components.go                # Generated component wiring
+│   ├── go.mod / go.sum              # Full dependency graph (used by cachi2)
 ├── Dockerfile                       # Multi-stage UBI9 container build
 ├── Makefile                         # Build, test, container targets
 ├── postgresexporter/
@@ -42,20 +46,26 @@ App ---------- GET/DELETE /api/v1/logs (HTTPS) --> postgres_admin --> PostgreSQL
 ```bash
 # Prerequisites: Go 1.23+, PostgreSQL
 
-# Build the collector binary
+# Build the collector binary (uses pre-generated source in cmd/otelcol-lightspeed/)
 make build
 
 # Run locally
-./dist/otelcol-lightspeed --config=config.yaml
+make run
 
 # Run tests
 make test
+
+# Regenerate source after changing builder-config.yaml
+make generate
 ```
 
 ## Log Record Schema
 
 The exporter writes a simplified 4-column schema optimised for audit log
-storage. Table creation is the operator's responsibility.
+storage. The `postgres_admin` extension automatically creates the schema,
+table, and indexes on startup (`IF NOT EXISTS` — idempotent). Extensions
+start before pipelines, so the table is guaranteed to exist before the
+first batch is written.
 
 ```sql
 CREATE TABLE templogs.logs (

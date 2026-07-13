@@ -3,6 +3,7 @@ package postgresadmin
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -275,5 +276,73 @@ func TestShutdownNilServer(t *testing.T) {
 	admin := &postgresAdmin{logger: zap.NewNop()}
 	if err := admin.Shutdown(context.Background()); err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestEnsureTableCreatesSchemaAndTable(t *testing.T) {
+	admin, mock := newTestAdmin(t)
+	defer mock.Close()
+
+	mock.ExpectExec(`CREATE SCHEMA IF NOT EXISTS "templogs"`).
+		WillReturnResult(pgxmock.NewResult("CREATE SCHEMA", 0))
+	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS "templogs"\."logs"`).
+		WillReturnResult(pgxmock.NewResult("CREATE TABLE", 0))
+	mock.ExpectExec(`CREATE INDEX IF NOT EXISTS "idx_templogs_logs_trace_id"`).
+		WillReturnResult(pgxmock.NewResult("CREATE INDEX", 0))
+	mock.ExpectExec(`CREATE INDEX IF NOT EXISTS "idx_templogs_logs_timestamp"`).
+		WillReturnResult(pgxmock.NewResult("CREATE INDEX", 0))
+
+	err := admin.ensureTable(context.Background())
+	if err != nil {
+		t.Fatalf("ensureTable failed: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("unmet expectations: %v", err)
+	}
+}
+
+func TestEnsureTableFailsOnSchemaError(t *testing.T) {
+	admin, mock := newTestAdmin(t)
+	defer mock.Close()
+
+	mock.ExpectExec(`CREATE SCHEMA IF NOT EXISTS "templogs"`).
+		WillReturnError(fmt.Errorf("permission denied"))
+
+	err := admin.ensureTable(context.Background())
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+}
+
+func TestEnsureTableFailsOnTableError(t *testing.T) {
+	admin, mock := newTestAdmin(t)
+	defer mock.Close()
+
+	mock.ExpectExec(`CREATE SCHEMA IF NOT EXISTS "templogs"`).
+		WillReturnResult(pgxmock.NewResult("CREATE SCHEMA", 0))
+	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS "templogs"\."logs"`).
+		WillReturnError(fmt.Errorf("permission denied"))
+
+	err := admin.ensureTable(context.Background())
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+}
+
+func TestEnsureTableFailsOnIndexError(t *testing.T) {
+	admin, mock := newTestAdmin(t)
+	defer mock.Close()
+
+	mock.ExpectExec(`CREATE SCHEMA IF NOT EXISTS "templogs"`).
+		WillReturnResult(pgxmock.NewResult("CREATE SCHEMA", 0))
+	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS "templogs"\."logs"`).
+		WillReturnResult(pgxmock.NewResult("CREATE TABLE", 0))
+	mock.ExpectExec(`CREATE INDEX IF NOT EXISTS "idx_templogs_logs_trace_id"`).
+		WillReturnError(fmt.Errorf("permission denied"))
+
+	err := admin.ensureTable(context.Background())
+	if err == nil {
+		t.Fatal("expected error, got nil")
 	}
 }

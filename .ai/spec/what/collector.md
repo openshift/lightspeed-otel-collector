@@ -6,7 +6,7 @@ Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTele
 
 ### Build
 
-1. The Collector binary is built with OCB using a build manifest (`builder-config.yaml`). The manifest declares exactly which components are compiled into the binary.
+1. The Collector binary is defined by an OCB build manifest (`builder-config.yaml`). OCB generates Go source code into `cmd/otelcol-lightspeed/` which is committed to the repo. CI builds use `go build` on the pre-generated source — OCB is only needed when regenerating after manifest changes (`make generate`).
 2. The build manifest includes:
    - **Receivers:** `otlpreceiver` (standard OTLP gRPC/HTTP)
    - **Exporters:**
@@ -19,7 +19,7 @@ Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTele
    - **Extensions:**
      - `healthcheckextension` — HTTP health endpoint for Kubernetes probes
      - `filestorage` — persists sending queue to disk for durability across pod restarts
-     - `postgresadmin` (custom, this repo) — HTTP API for log retrieval and deletion by trace_id
+     - `postgresadmin` (custom, this repo) — HTTPS API for log retrieval and deletion by trace_id; also bootstraps the PostgreSQL schema/table on startup
 3. The resulting binary is a single statically-linked Go executable named `otelcol-lightspeed`.
 
 ### Configuration
@@ -34,13 +34,17 @@ Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTele
    - **Traces:** all forwarded to a configurable tracing backend (`TRACES_BACKEND_ENDPOINT` env var)
    - **Metrics:** no pipeline defined → silently dropped
 
+### Runtime Dependencies
+
+8. The Collector requires a running PostgreSQL instance. In production, this is provisioned by the lightspeed-operator via the `crunchy-postgres` operator. The Collector does not manage the PostgreSQL lifecycle — it only connects to an existing instance.
+
 ### Deployment
 
-8. The Collector runs as a single-replica Deployment managed by the lightspeed-operator.
-9. The Collector listens on port 4317 (gRPC/TLS) and 4318 (HTTPS) for OTLP connections.
-10. The Collector connects to PostgreSQL using credentials injected via environment variable (`POSTGRES_CONNECTION_STRING`). The connection uses TLS (`sslmode=require`).
-11. A health check endpoint runs on port 13133.
-12. The admin API runs on port 8080 over HTTPS (GET/DELETE log records by trace_id).
+9. The Collector runs as a single-replica Deployment managed by the lightspeed-operator.
+10. The Collector listens on port 4317 (gRPC/TLS) and 4318 (HTTPS) for OTLP connections.
+11. The Collector connects to PostgreSQL using credentials injected via environment variable (`POSTGRES_CONNECTION_STRING`). The connection uses TLS (`sslmode=require`).
+12. A health check endpoint runs on port 13133.
+13. The admin API runs on port 8080 over HTTPS (GET/DELETE log records by trace_id).
 
 ### TLS
 
@@ -52,29 +56,34 @@ All external communication channels use TLS:
 
 In OpenShift, the serving certificate is injected by `service-ca`.
 
+### Startup Order
+
+The OTel Collector starts extensions before pipelines. The `postgres_admin` extension bootstraps the database schema, table, and indexes on startup (`CREATE ... IF NOT EXISTS`). By the time the `postgresexporter` pipeline starts and receives its first batch, the table is guaranteed to exist. As a safety net, the exporter's `retry_on_failure` config retries with exponential backoff if an insert fails due to a missing table.
+
 ### Health
 
-13. The Collector exposes the standard OTel Collector health check extension on port 13133 (`/`). The lightspeed-operator uses this for liveness and readiness probes.
+14. The Collector exposes the standard OTel Collector health check extension on port 13133 (`/`). The lightspeed-operator uses this for liveness and readiness probes.
 
 ### Data Durability
 
-14. The exporter uses retry with exponential backoff and a file-backed sending queue (via `file_storage` extension).
-15. The queue survives pod restarts (backed by persistent volume or emptyDir).
-16. Node failures may lose in-flight queue data.
+15. The exporter uses retry with exponential backoff and a file-backed sending queue (via `file_storage` extension).
+16. The queue survives pod restarts (backed by persistent volume or emptyDir).
+17. Node failures may lose in-flight queue data.
 
 ## Container Image
 
-17. The Dockerfile builds the Collector in a multi-stage build:
-    - **Stage 1:** `ubi9/go-toolset` — installs OCB, runs `ocb --config=builder-config.yaml` to produce the binary.
+18. The Dockerfile builds the Collector in a multi-stage build:
+    - **Stage 1:** `ubi9/go-toolset` — runs `go build` on the pre-generated source in `cmd/otelcol-lightspeed/`. No OCB install needed at build time — this enables hermetic (no-network) CI builds via Konflux/cachi2.
     - **Stage 2:** `ubi9/ubi-minimal` — minimal runtime with the Collector binary only.
-18. The image runs as non-root (UID 65532).
-19. The image is built and shipped via Konflux (pipeline definition is a separate ticket).
+19. The image runs as non-root (UID 65532).
+20. The image is built and shipped via Konflux. The Tekton pipeline uses cachi2 to prefetch Go modules from `cmd/otelcol-lightspeed/go.mod` (which includes `replace` directives for the local modules).
 
 ## Repository Contents
 
 | Path | Purpose |
 |---|---|
 | `builder-config.yaml` | OCB build manifest |
+| `cmd/otelcol-lightspeed/` | Pre-generated Collector source (committed; regenerate with `make generate`) |
 | `config.yaml` | Reference runtime config (direct-to-PostgreSQL) |
 | `config-router.yaml` | Reference runtime config (routing mode) |
 | `postgresexporter/` | Custom PostgreSQL exporter |

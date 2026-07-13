@@ -56,6 +56,11 @@ func (p *postgresAdmin) Start(ctx context.Context, _ component.Host) error {
 	}
 	p.pool = pool
 
+	if err := p.ensureTable(ctx); err != nil {
+		pool.Close()
+		return fmt.Errorf("postgres_admin: failed to ensure table: %w", err)
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/logs", p.handleGetLogs)
 	mux.HandleFunc("DELETE /api/v1/logs", p.handleDeleteLogs)
@@ -103,6 +108,48 @@ func (p *postgresAdmin) Shutdown(ctx context.Context) error {
 	if p.pool != nil {
 		p.pool.Close()
 	}
+	return nil
+}
+
+// ensureTable creates the schema, table, and indexes if they don't already
+// exist. All statements use IF NOT EXISTS so this is idempotent and safe to
+// run on every startup. Extensions start before pipelines in the OTel
+// Collector lifecycle, so the table is guaranteed to exist before the
+// exporter writes its first batch.
+func (p *postgresAdmin) ensureTable(ctx context.Context) error {
+	safeSchema := pgx.Identifier{p.config.Schema}.Sanitize()
+	safeTable := pgx.Identifier{p.config.Schema, p.config.LogsTable}.Sanitize()
+
+	createSchema := fmt.Sprintf(`CREATE SCHEMA IF NOT EXISTS %s`, safeSchema)
+	if _, err := p.pool.Exec(ctx, createSchema); err != nil {
+		return fmt.Errorf("create schema %s: %w", safeSchema, err)
+	}
+
+	createTable := fmt.Sprintf(`
+		CREATE TABLE IF NOT EXISTS %s (
+			id         BIGSERIAL PRIMARY KEY,
+			trace_id   TEXT NOT NULL,
+			timestamp  TIMESTAMPTZ NOT NULL,
+			event      TEXT NOT NULL,
+			body       JSONB
+		)`, safeTable)
+	if _, err := p.pool.Exec(ctx, createTable); err != nil {
+		return fmt.Errorf("create table %s: %w", safeTable, err)
+	}
+
+	safeIdxTraceID := pgx.Identifier{fmt.Sprintf("idx_%s_%s_trace_id", p.config.Schema, p.config.LogsTable)}.Sanitize()
+	safeIdxTimestamp := pgx.Identifier{fmt.Sprintf("idx_%s_%s_timestamp", p.config.Schema, p.config.LogsTable)}.Sanitize()
+	indexes := []string{
+		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS %s ON %s (trace_id)`, safeIdxTraceID, safeTable),
+		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS %s ON %s (timestamp)`, safeIdxTimestamp, safeTable),
+	}
+	for _, idx := range indexes {
+		if _, err := p.pool.Exec(ctx, idx); err != nil {
+			return fmt.Errorf("create index: %w", err)
+		}
+	}
+
+	p.logger.Info("postgres_admin: table ready", zap.String("table", safeTable))
 	return nil
 }
 
