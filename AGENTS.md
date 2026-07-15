@@ -8,12 +8,16 @@ All specifications live in `.ai/spec/`. Start with `.ai/spec/README.md` for proj
 
 ## Commands
 
-No Makefile yet — repo is greenfield. Expected targets once scaffolded:
-
 ```bash
-make build      # Build the collector binary via ocb
-make test       # Run unit tests
-make lint       # golangci-lint
+make build           # Build the collector binary via ocb
+make test            # Run unit tests
+make lint            # golangci-lint
+make fmt             # go fmt
+make vet             # go vet
+make generate        # Generate collector source code from builder config
+make verify-generate # Verify generated source is up to date
+make run             # Build and run the collector locally
+make docker-build    # Build container image (runs tests first)
 ```
 
 ## Conventions
