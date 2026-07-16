@@ -102,7 +102,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.16 // indirect
 	github.com/tklauser/numcpus v0.11.0 // indirect
 	github.com/twmb/murmur3 v1.1.8 // indirect
-	github.com/ua-parser/uap-go v0.0.0-20251207011819-db9adb27a0b8 // indirect
+	github.com/ua-parser/uap-go v0.0.0-20260529044130-17c35e68e58c // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	github.com/zeebo/xxh3 v1.1.0 // indirect
 	go.etcd.io/bbolt v1.5.0 // indirect
