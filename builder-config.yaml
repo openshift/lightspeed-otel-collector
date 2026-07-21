@@ -51,3 +51,7 @@ extensions:
   # Postgres admin — HTTP API for log retrieval and deletion by trace_id.
   - gomod: github.com/openshift/lightspeed-otel-collector/extension/postgresadmin v0.0.0
     path: ./extension/postgresadmin
+
+  # HTTPS metrics — reverse-proxies internal Prometheus metrics over HTTPS.
+  - gomod: github.com/openshift/lightspeed-otel-collector/extension/httpsmetrics v0.0.0
+    path: ./extension/httpsmetrics

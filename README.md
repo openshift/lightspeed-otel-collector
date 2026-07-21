@@ -3,16 +3,10 @@
 Custom OpenTelemetry Collector distribution for OpenShift Lightspeed.
 Receives OTLP logs over TLS and writes them to PostgreSQL.
 
-Audit events are emitted to **both** stdout (for `kubectl logs` / cluster logging)
-and the Collector (for structured persistence). The Collector does not replace
-stdout — it runs alongside it.
-
 ```
-                  ┌──→ stdout (always, for kubectl logs / cluster logging)
-App (audit event) ┤
-                  └──→ OTLP/TLS → Collector → batch → postgresexporter → PostgreSQL (TLS)
+App --OTLP/TLS--> receiver --> batch processor --> postgresexporter --> PostgreSQL (TLS)
 
-App ── GET/DELETE /api/v1/logs (HTTPS) ──→ postgres_admin → PostgreSQL (TLS)
+App ---------- GET/DELETE /api/v1/logs (HTTPS) --> postgres_admin --> PostgreSQL (TLS)
 ```
 
 ## Project Structure
@@ -22,7 +16,7 @@ App ── GET/DELETE /api/v1/logs (HTTPS) ──→ postgres_admin → PostgreS
 ├── cmd/otelcol-lightspeed/          # Pre-generated Collector source (committed)
 │   ├── main.go                      # Generated entry point
 │   ├── components.go                # Generated component wiring
-│   ├── go.mod / go.sum              # Full dependency graph (used by cachi2)
+│   └── go.mod / go.sum              # Full dependency graph (used by cachi2)
 ├── Dockerfile                       # Multi-stage UBI9 container build
 ├── Makefile                         # Build, test, container targets
 ├── postgresexporter/
@@ -36,15 +30,24 @@ App ── GET/DELETE /api/v1/logs (HTTPS) ──→ postgres_admin → PostgreS
 │   ├── config_test.go               # Config validation tests
 │   └── exporter_test.go             # Exporter logic tests (pgxmock)
 └── extension/
-    └── postgresadmin/
-        ├── go.mod                   # Go module (pgx/v5)
+    ├── postgresadmin/
+    │   ├── go.mod                   # Go module (pgx/v5)
+    │   ├── doc.go                   # Package documentation
+    │   ├── metadata.go              # Component type registration ("postgres_admin")
+    │   ├── config.go                # Extension configuration + validation
+    │   ├── factory.go               # Factory — creates extension instances
+    │   ├── extension.go             # HTTP server + GET/DELETE handlers
+    │   ├── config_test.go           # Config validation tests
+    │   └── extension_test.go        # HTTP handler tests (pgxmock)
+    └── httpsmetrics/
+        ├── go.mod                   # Go module
         ├── doc.go                   # Package documentation
-        ├── metadata.go              # Component type registration ("postgres_admin")
+        ├── metadata.go              # Component type registration ("https_metrics")
         ├── config.go                # Extension configuration + validation
         ├── factory.go               # Factory — creates extension instances
-        ├── extension.go             # HTTP server + GET/DELETE handlers
+        ├── extension.go             # HTTPS reverse proxy for /metrics
         ├── config_test.go           # Config validation tests
-        └── extension_test.go        # HTTP handler tests (pgxmock)
+        └── extension_test.go        # Proxy + TLS tests
 ```
 
 ## Quick Start
@@ -65,66 +68,10 @@ make test
 make generate
 ```
 
-## Emitting Audit Events (Python Example)
-
-The agentic sandbox emits each audit event to **both** stdout and the Collector.
-This is configured at the logger level — individual log statements don't change.
-
-The trace ID comes from the `traceparent` HTTP header sent by the operator with
-each request. A FastAPI middleware extracts it into the OTel context, and the
-`LoggingHandler` automatically attaches it to every log record emitted during
-that request:
-
-```python
-# app.py — logger + OTel setup (runs once at import time)
-import logging
-import os
-
-from opentelemetry.exporter.otlp.proto.grpc.log_exporter import OTLPLogExporter
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
-from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.propagate import set_global_textmap
-from opentelemetry.propagators.textmap import TraceContextTextMapPropagator
-
-# W3C traceparent propagation — extracts trace_id from incoming headers
-set_global_textmap(TraceContextTextMapPropagator())
-TracerProvider()  # needed for context propagation
-
-# OTel log exporter → Collector
-provider = LoggerProvider()
-provider.add_log_record_processor(
-    BatchLogRecordProcessor(
-        OTLPLogExporter(endpoint=os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"], insecure=False)
-    )
-)
-otel_handler = LoggingHandler(level=logging.INFO, logger_provider=provider)
-
-# Configure logger with BOTH handlers
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
-logging.getLogger().addHandler(otel_handler)
-
-# Instrument FastAPI — automatically extracts traceparent from incoming requests
-# and sets the active trace context for the duration of each request
-app = FastAPI()
-FastAPIInstrumentor.instrument_app(app)
-```
-
-With this setup, every existing `logger.info(...)` call in the request path
-automatically carries the `trace_id` from the operator's `traceparent` header.
-No per-statement changes needed.
-
-The `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable is always set by the
-operator on agentic pods (e.g. `https://otelcol-lightspeed.namespace.svc:4317`).
-
 ## Log Record Schema
 
 The exporter writes a simplified 4-column schema optimised for audit log
-storage. The `postgres_admin` extension automatically creates the schema,
-table, and indexes on startup (`IF NOT EXISTS` — idempotent). Extensions
-start before pipelines, so the table is guaranteed to exist before the
-first batch is written.
+storage. Table creation is the operator's responsibility.
 
 ```sql
 CREATE TABLE templogs.logs (
@@ -238,9 +185,10 @@ All communication channels use TLS:
 | OTLP ingestion (gRPC :4317) | mTLS-capable | Serving cert via `tls.cert_file` / `tls.key_file` |
 | OTLP ingestion (HTTP :4318) | HTTPS | Serving cert via `tls.cert_file` / `tls.key_file` |
 | Admin API (:8080) | HTTPS | Serving cert via `tls_cert_file` / `tls_key_file` |
+| Prometheus metrics (:8888) | HTTPS | Serving cert via `tls_cert_file` / `tls_key_file` |
 | PostgreSQL connection | TLS | `sslmode=require` (or `verify-full`) in DSN |
 | Trace export (OTLP gRPC) | TLS | Default TLS (system CA bundle) |
 
 In OpenShift, the serving certificate is injected by `service-ca` into
 `/var/run/secrets/serving-cert/tls.{crt,key}`. For local development, omit
-the TLS fields from `postgres_admin` to fall back to plaintext HTTP.
+the TLS fields from `postgres_admin` and `https_metrics` to fall back to plaintext HTTP.

@@ -94,8 +94,14 @@ extensions:
       on_start: true
       directory: /var/lib/otelcol/file_storage/compaction
 
+  https_metrics:
+    endpoint: 0.0.0.0:8888
+    upstream: http://127.0.0.1:18888/metrics
+    tls_cert_file: /var/run/secrets/serving-cert/tls.crt
+    tls_key_file: /var/run/secrets/serving-cert/tls.key
+
 service:
-  extensions: [health_check, file_storage, postgres_admin]
+  extensions: [health_check, file_storage, postgres_admin, https_metrics]
 
   pipelines:
     # --- Logs ---
@@ -127,3 +133,12 @@ service:
   telemetry:
     logs:
       level: info
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: '127.0.0.1'
+                port: 18888
+                without_type_suffix: true
+                without_units: true

@@ -19,6 +19,7 @@ import (
 	healthcheckextension "github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension"
 	filestorage "github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/filestorage"
 	postgresadmin "github.com/openshift/lightspeed-otel-collector/extension/postgresadmin"
+	httpsmetrics "github.com/openshift/lightspeed-otel-collector/extension/httpsmetrics"
 	batchprocessor "go.opentelemetry.io/collector/processor/batchprocessor"
 	otlpreceiver "go.opentelemetry.io/collector/receiver/otlpreceiver"
 )
@@ -47,6 +48,7 @@ func components() (otelcol.Factories, error) {
 		healthcheckextension.NewFactory(),
 		filestorage.NewFactory(),
 		postgresadmin.NewFactory(),
+		httpsmetrics.NewFactory(),
 	)
 	if err != nil {
 		return otelcol.Factories{}, err
@@ -55,6 +57,7 @@ func components() (otelcol.Factories, error) {
 		healthcheckextension.NewFactory().Type(): "github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.155.0",
 		filestorage.NewFactory().Type(): "github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/filestorage v0.155.0",
 		postgresadmin.NewFactory().Type(): "github.com/openshift/lightspeed-otel-collector/extension/postgresadmin v0.0.0",
+		httpsmetrics.NewFactory().Type(): "github.com/openshift/lightspeed-otel-collector/extension/httpsmetrics v0.0.0",
 	})
 
 	factories.Receivers, err = otelcol.MakeFactoryMap[receiver.Factory](

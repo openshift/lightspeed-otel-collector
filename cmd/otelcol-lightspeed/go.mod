@@ -8,9 +8,10 @@ require (
 	github.com/open-telemetry/opentelemetry-collector-contrib/connector/routingconnector v0.155.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.155.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/filestorage v0.155.0
+	github.com/openshift/lightspeed-otel-collector/extension/httpsmetrics v0.0.0
 	github.com/openshift/lightspeed-otel-collector/extension/postgresadmin v0.0.0
 	github.com/openshift/lightspeed-otel-collector/postgresexporter v0.0.0
-	go.opentelemetry.io/collector/component v1.61.0
+	go.opentelemetry.io/collector/component v1.62.0
 	go.opentelemetry.io/collector/confmap v1.61.0
 	go.opentelemetry.io/collector/confmap/provider/envprovider v1.61.0
 	go.opentelemetry.io/collector/confmap/provider/fileprovider v1.61.0
@@ -22,7 +23,7 @@ require (
 	go.opentelemetry.io/collector/exporter/debugexporter v0.155.0
 	go.opentelemetry.io/collector/exporter/otlpexporter v0.155.0
 	go.opentelemetry.io/collector/exporter/otlphttpexporter v0.155.0
-	go.opentelemetry.io/collector/extension v1.61.0
+	go.opentelemetry.io/collector/extension v1.62.0
 	go.opentelemetry.io/collector/otelcol v0.155.0
 	go.opentelemetry.io/collector/processor v1.61.0
 	go.opentelemetry.io/collector/processor/batchprocessor v0.155.0
@@ -110,7 +111,7 @@ require (
 	go.opentelemetry.io/collector v0.155.0 // indirect
 	go.opentelemetry.io/collector/client v1.61.0 // indirect
 	go.opentelemetry.io/collector/component/componentstatus v0.155.0 // indirect
-	go.opentelemetry.io/collector/component/componenttest v0.155.0 // indirect
+	go.opentelemetry.io/collector/component/componenttest v0.156.0 // indirect
 	go.opentelemetry.io/collector/config/configauth v1.61.0 // indirect
 	go.opentelemetry.io/collector/config/configcompression v1.61.0 // indirect
 	go.opentelemetry.io/collector/config/configgrpc v0.155.0 // indirect
@@ -137,14 +138,14 @@ require (
 	go.opentelemetry.io/collector/extension/extensionauth v1.61.0 // indirect
 	go.opentelemetry.io/collector/extension/extensioncapabilities v0.155.0 // indirect
 	go.opentelemetry.io/collector/extension/extensionmiddleware v0.155.0 // indirect
-	go.opentelemetry.io/collector/extension/extensiontest v0.155.0 // indirect
+	go.opentelemetry.io/collector/extension/extensiontest v0.156.0 // indirect
 	go.opentelemetry.io/collector/extension/xextension v0.155.0 // indirect
-	go.opentelemetry.io/collector/featuregate v1.61.0 // indirect
-	go.opentelemetry.io/collector/internal/componentalias v0.155.0 // indirect
+	go.opentelemetry.io/collector/featuregate v1.62.0 // indirect
+	go.opentelemetry.io/collector/internal/componentalias v0.156.0 // indirect
 	go.opentelemetry.io/collector/internal/fanoutconsumer v0.155.0 // indirect
 	go.opentelemetry.io/collector/internal/sharedcomponent v0.155.0 // indirect
 	go.opentelemetry.io/collector/internal/telemetry v0.155.0 // indirect
-	go.opentelemetry.io/collector/pdata v1.61.0 // indirect
+	go.opentelemetry.io/collector/pdata v1.62.0 // indirect
 	go.opentelemetry.io/collector/pdata/pprofile v0.155.0 // indirect
 	go.opentelemetry.io/collector/pdata/testdata v0.155.0 // indirect
 	go.opentelemetry.io/collector/pdata/xpdata v0.155.0 // indirect
@@ -191,11 +192,13 @@ require (
 	gonum.org/v1/gonum v0.17.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
-	google.golang.org/grpc v1.81.1 // indirect
+	google.golang.org/grpc v1.82.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace github.com/openshift/lightspeed-otel-collector/extension/postgresadmin v0.0.0 => ../../extension/postgresadmin
+
+replace github.com/openshift/lightspeed-otel-collector/extension/httpsmetrics v0.0.0 => ../../extension/httpsmetrics
 
 replace github.com/openshift/lightspeed-otel-collector/postgresexporter v0.0.0 => ../../postgresexporter

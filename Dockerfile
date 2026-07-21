@@ -12,6 +12,7 @@ WORKDIR /workspace
 COPY cmd/otelcol-lightspeed/go.mod cmd/otelcol-lightspeed/go.sum cmd/otelcol-lightspeed/
 COPY postgresexporter/go.mod postgresexporter/go.sum postgresexporter/
 COPY extension/postgresadmin/go.mod extension/postgresadmin/go.sum extension/postgresadmin/
+COPY extension/httpsmetrics/go.mod extension/httpsmetrics/go.sum extension/httpsmetrics/
 RUN cd cmd/otelcol-lightspeed && go mod download
 
 # Copy source.
@@ -44,8 +45,8 @@ LABEL name="openshift-lightspeed/otelcol-lightspeed" \
       io.k8s.description="Custom OpenTelemetry Collector distribution that exports logs to PostgreSQL." \
       io.openshift.tags="opentelemetry,otel,collector,postgres,logs"
 
-# OTLP gRPC/HTTP, health check, and admin API ports.
-EXPOSE 4317 4318 8080 13133
+# OTLP gRPC/HTTP, health check, admin API, and metrics ports.
+EXPOSE 4317 4318 8080 8888 13133
 
 # Run as non-root, same UID as lightspeed-operator.
 USER 65532:65532

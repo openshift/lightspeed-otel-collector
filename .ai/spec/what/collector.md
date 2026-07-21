@@ -2,13 +2,11 @@
 
 Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTelemetry Collector Builder (OCB).
 
-The Collector receives audit events via OTLP and persists them to PostgreSQL. It does **not** replace stdout logging — applications emit to both stdout (for `kubectl logs` / cluster logging) and the Collector (for structured persistence) simultaneously.
-
 ## Behavioral Rules
 
 ### Build
 
-1. The Collector binary is defined by an OCB build manifest (`builder-config.yaml`). OCB generates Go source code into `cmd/otelcol-lightspeed/` which is committed to the repo. CI builds use `go build` on the pre-generated source — OCB is only needed when regenerating after manifest changes (`make generate`).
+1. The Collector binary is built with OCB using a build manifest (`builder-config.yaml`). The manifest declares exactly which components are compiled into the binary.
 2. The build manifest includes:
    - **Receivers:** `otlpreceiver` (standard OTLP gRPC/HTTP)
    - **Exporters:**
@@ -21,7 +19,7 @@ The Collector receives audit events via OTLP and persists them to PostgreSQL. It
    - **Extensions:**
      - `healthcheckextension` — HTTP health endpoint for Kubernetes probes
      - `filestorage` — persists sending queue to disk for durability across pod restarts
-     - `postgresadmin` (custom, this repo) — HTTPS API for log retrieval and deletion by trace_id; also bootstraps the PostgreSQL schema/table on startup
+     - `postgresadmin` (custom, this repo) — HTTP API for log retrieval and deletion by trace_id
 3. The resulting binary is a single statically-linked Go executable named `otelcol-lightspeed`.
 
 ### Configuration
@@ -36,31 +34,25 @@ The Collector receives audit events via OTLP and persists them to PostgreSQL. It
    - **Traces:** all forwarded to a configurable tracing backend (`TRACES_BACKEND_ENDPOINT` env var)
    - **Metrics:** no pipeline defined → silently dropped
 
-### Runtime Dependencies
-
-8. The Collector requires a running PostgreSQL instance. In production, this is provisioned by the lightspeed-operator via the `crunchy-postgres` operator. The Collector does not manage the PostgreSQL lifecycle — it only connects to an existing instance.
-
 ### Deployment
 
-9. The Collector runs as a single-replica Deployment managed by the lightspeed-operator.
-10. The Collector listens on port 4317 (gRPC/TLS) and 4318 (HTTPS) for OTLP connections.
-11. The Collector connects to PostgreSQL using credentials injected via environment variable (`POSTGRES_CONNECTION_STRING`). The connection uses TLS (`sslmode=require`).
-12. A health check endpoint runs on port 13133.
-13. The admin API runs on port 8080 over HTTPS (GET/DELETE log records by trace_id).
+8. The Collector runs as a single-replica Deployment managed by the lightspeed-operator.
+9. The Collector listens on port 4317 (gRPC/TLS) and 4318 (HTTPS) for OTLP connections.
+10. The Collector connects to PostgreSQL using credentials injected via environment variable (`POSTGRES_CONNECTION_STRING`). The connection uses TLS (`sslmode=require`).
+11. A health check endpoint runs on port 13133.
+12. The admin API runs on port 8080 over HTTPS (GET/DELETE log records by trace_id).
+13. Cluster-facing Prometheus metrics are served on port 8888 over HTTPS via the `https_metrics` extension (reverse-proxies localhost-only stock telemetry pull).
 
 ### TLS
 
 All external communication channels use TLS:
 - OTLP receiver (gRPC/HTTP) — serving cert from `/var/run/secrets/serving-cert/tls.{crt,key}`
 - Admin API (HTTPS) — serving cert from `/var/run/secrets/serving-cert/tls.{crt,key}`
+- Internal Prometheus metrics (HTTPS `:8888`) — same serving cert; reverse-proxied via `https_metrics` extension
 - PostgreSQL connections — `sslmode=require` in DSN
 - Trace export (OTLP gRPC) — system CA bundle (TLS enabled by default)
 
 In OpenShift, the serving certificate is injected by `service-ca`.
-
-### Startup Order
-
-The OTel Collector starts extensions before pipelines. The `postgres_admin` extension bootstraps the database schema, table, and indexes on startup (`CREATE ... IF NOT EXISTS`). By the time the `postgresexporter` pipeline starts and receives its first batch, the table is guaranteed to exist. As a safety net, the exporter's `retry_on_failure` config retries with exponential backoff if an insert fails due to a missing table.
 
 ### Health
 
@@ -75,17 +67,16 @@ The OTel Collector starts extensions before pipelines. The `postgres_admin` exte
 ## Container Image
 
 18. The Dockerfile builds the Collector in a multi-stage build:
-    - **Stage 1:** `ubi9/go-toolset` — runs `go build` on the pre-generated source in `cmd/otelcol-lightspeed/`. No OCB install needed at build time — this enables hermetic (no-network) CI builds via Konflux/cachi2.
+    - **Stage 1:** `ubi9/go-toolset` — installs OCB, runs `ocb --config=builder-config.yaml` to produce the binary.
     - **Stage 2:** `ubi9/ubi-minimal` — minimal runtime with the Collector binary only.
 19. The image runs as non-root (UID 65532).
-20. The image is built and shipped via Konflux. The Tekton pipeline uses cachi2 to prefetch Go modules from `cmd/otelcol-lightspeed/go.mod` (which includes `replace` directives for the local modules).
+20. The image is built and shipped via Konflux (pipeline definition is a separate ticket).
 
 ## Repository Contents
 
 | Path | Purpose |
 |---|---|
 | `builder-config.yaml` | OCB build manifest |
-| `cmd/otelcol-lightspeed/` | Pre-generated Collector source (committed; regenerate with `make generate`) |
 | `config.yaml` | Reference runtime config (direct-to-PostgreSQL) |
 | `config-router.yaml` | Reference runtime config (routing mode) |
 | `postgresexporter/` | Custom PostgreSQL exporter |
