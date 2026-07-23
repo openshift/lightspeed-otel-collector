@@ -127,8 +127,8 @@ github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthchecke
 github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.155.0/go.mod h1:CMBHl2erkS+zhJnCXIVDDzeuI61OJ76b3kHp8foyPNQ=
 github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/filestorage v0.155.0 h1:5IVwLEry6FMUBp/Dyru66T2XUGuz9xWc27g7I1eyAxI=
 github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/filestorage v0.155.0/go.mod h1:fh5V+/bN33OQOkUUlMKy6Pwv/sLEDhzEyxf0KaC7+fc=
-github.com/open-telemetry/opentelemetry-collector-contrib/internal/common v0.155.0 h1:n2kExWCH+hdMnFV2LzVcJjoym0boBG3yn8OB3sD6h0E=
-github.com/open-telemetry/opentelemetry-collector-contrib/internal/common v0.155.0/go.mod h1:29i06ZNQ83QAZ05672QuYWiRwae3t8n+s+TWp7WL9d0=
+github.com/open-telemetry/opentelemetry-collector-contrib/internal/common v0.156.0 h1:NbW0V2xBmQ7WWzlVsJw61/nLxQM5kSKhkwQClLPo3TA=
+github.com/open-telemetry/opentelemetry-collector-contrib/internal/common v0.156.0/go.mod h1:552gyph19MYV0RWg+j5zXTOVrXfmSJa3hinSvVJMj24=
 github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal v0.155.0 h1:CJosD1GUi/DDW4kW/oKw2XZG3SZsfdQDBsSwgq2PK0w=
 github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal v0.155.0/go.mod h1:8rXdvtr2/lOJnBY2X4G4W9uG7GzEIidU+nNML/Ttv/w=
 github.com/open-telemetry/opentelemetry-collector-contrib/internal/healthcheck v0.155.0 h1:u6iuD41Pr2ZYu7hwwJehT52FGLUX6nFgCHdjAoE12sQ=
