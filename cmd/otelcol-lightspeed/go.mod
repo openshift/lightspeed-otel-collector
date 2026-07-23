@@ -87,7 +87,7 @@ require (
 	github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal v0.155.0 // indirect
 	github.com/open-telemetry/opentelemetry-collector-contrib/internal/healthcheck v0.155.0 // indirect
 	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl v0.155.0 // indirect
-	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/status v0.155.0 // indirect
+	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/status v0.156.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.27 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
@@ -111,7 +111,7 @@ require (
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/collector v0.155.0 // indirect
 	go.opentelemetry.io/collector/client v1.61.0 // indirect
-	go.opentelemetry.io/collector/component/componentstatus v0.155.0 // indirect
+	go.opentelemetry.io/collector/component/componentstatus v0.156.0 // indirect
 	go.opentelemetry.io/collector/component/componenttest v0.156.0 // indirect
 	go.opentelemetry.io/collector/config/configauth v1.61.0 // indirect
 	go.opentelemetry.io/collector/config/configcompression v1.61.0 // indirect
@@ -150,7 +150,7 @@ require (
 	go.opentelemetry.io/collector/pdata/pprofile v0.155.0 // indirect
 	go.opentelemetry.io/collector/pdata/testdata v0.155.0 // indirect
 	go.opentelemetry.io/collector/pdata/xpdata v0.155.0 // indirect
-	go.opentelemetry.io/collector/pipeline v1.61.0 // indirect
+	go.opentelemetry.io/collector/pipeline v1.62.0 // indirect
 	go.opentelemetry.io/collector/pipeline/xpipeline v0.155.0 // indirect
 	go.opentelemetry.io/collector/processor/processortest v0.155.0 // indirect
 	go.opentelemetry.io/collector/processor/xprocessor v0.155.0 // indirect
