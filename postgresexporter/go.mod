@@ -7,7 +7,7 @@ require (
 	github.com/pashagolub/pgxmock/v5 v5.1.0
 	go.opentelemetry.io/collector/component v1.61.0
 	go.opentelemetry.io/collector/config/configoptional v1.61.0
-	go.opentelemetry.io/collector/config/configretry v1.61.0
+	go.opentelemetry.io/collector/config/configretry v1.63.0
 	go.opentelemetry.io/collector/exporter v1.61.0
 	go.opentelemetry.io/collector/exporter/exporterhelper v0.155.0
 	go.opentelemetry.io/collector/pdata v1.61.0
@@ -17,6 +17,7 @@ require (
 
 require (
 	github.com/cenkalti/backoff/v6 v6.0.0 // indirect
+	github.com/cenkalti/backoff/v7 v7.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
