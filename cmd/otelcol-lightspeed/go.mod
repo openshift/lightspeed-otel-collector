@@ -11,7 +11,7 @@ require (
 	github.com/openshift/lightspeed-otel-collector/extension/httpsmetrics v0.0.0
 	github.com/openshift/lightspeed-otel-collector/extension/postgresadmin v0.0.0
 	github.com/openshift/lightspeed-otel-collector/postgresexporter v0.0.0
-	go.opentelemetry.io/collector/component v1.62.0
+	go.opentelemetry.io/collector/component v1.63.0
 	go.opentelemetry.io/collector/confmap v1.61.0
 	go.opentelemetry.io/collector/confmap/provider/envprovider v1.61.0
 	go.opentelemetry.io/collector/confmap/provider/fileprovider v1.61.0
@@ -111,7 +111,7 @@ require (
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/collector v0.155.0 // indirect
 	go.opentelemetry.io/collector/client v1.61.0 // indirect
-	go.opentelemetry.io/collector/component/componentstatus v0.155.0 // indirect
+	go.opentelemetry.io/collector/component/componentstatus v0.157.0 // indirect
 	go.opentelemetry.io/collector/component/componenttest v0.156.0 // indirect
 	go.opentelemetry.io/collector/config/configauth v1.61.0 // indirect
 	go.opentelemetry.io/collector/config/configcompression v1.61.0 // indirect
@@ -141,16 +141,16 @@ require (
 	go.opentelemetry.io/collector/extension/extensionmiddleware v0.155.0 // indirect
 	go.opentelemetry.io/collector/extension/extensiontest v0.156.0 // indirect
 	go.opentelemetry.io/collector/extension/xextension v0.155.0 // indirect
-	go.opentelemetry.io/collector/featuregate v1.62.0 // indirect
+	go.opentelemetry.io/collector/featuregate v1.63.0 // indirect
 	go.opentelemetry.io/collector/internal/componentalias v0.156.0 // indirect
 	go.opentelemetry.io/collector/internal/fanoutconsumer v0.155.0 // indirect
 	go.opentelemetry.io/collector/internal/sharedcomponent v0.155.0 // indirect
 	go.opentelemetry.io/collector/internal/telemetry v0.155.0 // indirect
-	go.opentelemetry.io/collector/pdata v1.62.0 // indirect
+	go.opentelemetry.io/collector/pdata v1.63.0 // indirect
 	go.opentelemetry.io/collector/pdata/pprofile v0.155.0 // indirect
 	go.opentelemetry.io/collector/pdata/testdata v0.155.0 // indirect
 	go.opentelemetry.io/collector/pdata/xpdata v0.155.0 // indirect
-	go.opentelemetry.io/collector/pipeline v1.61.0 // indirect
+	go.opentelemetry.io/collector/pipeline v1.63.0 // indirect
 	go.opentelemetry.io/collector/pipeline/xpipeline v0.155.0 // indirect
 	go.opentelemetry.io/collector/processor/processortest v0.155.0 // indirect
 	go.opentelemetry.io/collector/processor/xprocessor v0.155.0 // indirect
