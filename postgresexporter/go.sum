@@ -1,5 +1,7 @@
 github.com/cenkalti/backoff/v6 v6.0.0 h1:7R9+pB7OnXspgcrA1yIBfUZ6Wos1zd4aaiEbwvhu1u4=
 github.com/cenkalti/backoff/v6 v6.0.0/go.mod h1:5WCmPelT2zwAaNETjGJVKHDnZvjQdPsGeHHwm5lIPPI=
+github.com/cenkalti/backoff/v7 v7.0.0 h1:ZP+QAaaOnVUHo+ufFpZ835hbT3x2fy+h2lecVEosZ6A=
+github.com/cenkalti/backoff/v7 v7.0.0/go.mod h1:qcKBGwsu4hpxHtQ8tWYsQ+ifzx2+sS+Xx/3jfe30lI8=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -75,8 +77,8 @@ go.opentelemetry.io/collector/component/componenttest v0.155.0 h1:FfQQpYJnkNhNW5
 go.opentelemetry.io/collector/component/componenttest v0.155.0/go.mod h1:MkXnGN4QH6El1GGTTOrDUqY8/p8Vkbfi0Non2Pmi0m4=
 go.opentelemetry.io/collector/config/configoptional v1.61.0 h1:i3xL+nyzbSXU4n7kcTOzo+q/qbYihMNGeUHgYzVQpYA=
 go.opentelemetry.io/collector/config/configoptional v1.61.0/go.mod h1:GUGhAdYjnQu47DNMAVPM1nLrnluuaRe05YZ3XctJwWw=
-go.opentelemetry.io/collector/config/configretry v1.61.0 h1:DLQAe4bz1TthWF4KJdjlA85R0c5BQ/QIl7WM3alELXE=
-go.opentelemetry.io/collector/config/configretry v1.61.0/go.mod h1:OjQl1ewsdpmqFIWDjP0rc7ozbafwuisITDwNWEGpRzY=
+go.opentelemetry.io/collector/config/configretry v1.63.0 h1:+rp8xKUuHbglqlcn7kQlgtihs+c92Qg6bBGQxmcTvNQ=
+go.opentelemetry.io/collector/config/configretry v1.63.0/go.mod h1:W6bJYhzZ3FQ2Tg0K5SWprF3l7MotMqD1uQbgYm00SU8=
 go.opentelemetry.io/collector/confmap v1.61.0 h1:LkSQF8tt3eyYTK+sW4d4ub2T0SjUwwzxAt7dJnfKFHs=
 go.opentelemetry.io/collector/confmap v1.61.0/go.mod h1:OmuazWMkNuAwJr5BMuloacsNrW9ES458VHjVfLB0B78=
 go.opentelemetry.io/collector/confmap/xconfmap v0.155.0 h1:tJ8UbfRsG7Owqfixr3n3Jq6os1Qk50ZCUUPtBXpXT7w=
