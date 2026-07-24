@@ -136,7 +136,7 @@ require (
 	go.opentelemetry.io/collector/exporter/exporterhelper/xexporterhelper v0.155.0 // indirect
 	go.opentelemetry.io/collector/exporter/exportertest v0.155.0 // indirect
 	go.opentelemetry.io/collector/exporter/xexporter v0.155.0 // indirect
-	go.opentelemetry.io/collector/extension/extensionauth v1.61.0 // indirect
+	go.opentelemetry.io/collector/extension/extensionauth v1.63.0 // indirect
 	go.opentelemetry.io/collector/extension/extensioncapabilities v0.155.0 // indirect
 	go.opentelemetry.io/collector/extension/extensionmiddleware v0.155.0 // indirect
 	go.opentelemetry.io/collector/extension/extensiontest v0.156.0 // indirect
