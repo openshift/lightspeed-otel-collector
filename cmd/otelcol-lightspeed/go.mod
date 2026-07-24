@@ -71,7 +71,7 @@ require (
 	github.com/jackc/pgx/v5 v5.10.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.18.6 // indirect
+	github.com/klauspost/compress v1.19.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/knadh/koanf/maps v0.1.2 // indirect
 	github.com/knadh/koanf/providers/confmap v1.0.0 // indirect
@@ -109,7 +109,7 @@ require (
 	github.com/zeebo/xxh3 v1.1.0 // indirect
 	go.etcd.io/bbolt v1.5.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/collector v0.155.0 // indirect
+	go.opentelemetry.io/collector v0.157.0 // indirect
 	go.opentelemetry.io/collector/client v1.61.0 // indirect
 	go.opentelemetry.io/collector/component/componentstatus v0.155.0 // indirect
 	go.opentelemetry.io/collector/component/componenttest v0.156.0 // indirect
