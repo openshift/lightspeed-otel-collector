@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -305,6 +306,70 @@ func TestHandleGetLogsLimitCapped(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Errorf("expected 200, got %d", w.Code)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("unmet expectations: %v", err)
+	}
+}
+
+func TestHandleGetLogsTextFormat(t *testing.T) {
+	admin, mock := newTestAdmin(t)
+	defer mock.Close()
+
+	ts1 := time.Date(2026, 7, 9, 12, 0, 0, 0, time.UTC)
+	ts2 := time.Date(2026, 7, 9, 12, 0, 1, 0, time.UTC)
+
+	// One string body (will be unquoted) and one object body (stays as JSON)
+	rows := pgxmock.NewRows([]string{"id", "phase", "timestamp", "event", "body"}).
+		AddRow(int64(1), "planning", ts1, "audit.agent.started", []byte(`"[agent] Starting query"`)).
+		AddRow(int64(2), "planning", ts2, "audit.agent.tool.call", []byte(`{"tool":"bash"}`))
+
+	mock.ExpectQuery(`SELECT id, phase, timestamp, event, body FROM templogs\.logs WHERE agentic_run_id = \$1 AND id > \$2 ORDER BY id ASC LIMIT \$3`).
+		WithArgs("run-text", int64(0), 101).
+		WillReturnRows(rows)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/logs?agentic_run_id=run-text&format=text", nil)
+	w := httptest.NewRecorder()
+	admin.handleGetLogs(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d; body: %s", w.Code, w.Body.String())
+	}
+
+	contentType := w.Header().Get("Content-Type")
+	if contentType != "text/plain; charset=utf-8" {
+		t.Errorf("expected text/plain content type, got %q", contentType)
+	}
+
+	body := w.Body.String()
+	lines := strings.Split(strings.TrimRight(body, "\n"), "\n")
+
+	// Metadata header: agentic_run_id, records, has_more, blank line
+	if len(lines) < 5 {
+		t.Fatalf("expected at least 5 lines, got %d: %q", len(lines), body)
+	}
+	if lines[0] != "agentic_run_id: run-text" {
+		t.Errorf("line 0: expected 'agentic_run_id: run-text', got %q", lines[0])
+	}
+	if lines[1] != "records: 2" {
+		t.Errorf("line 1: expected 'records: 2', got %q", lines[1])
+	}
+	if lines[2] != "has_more: false" {
+		t.Errorf("line 2: expected 'has_more: false', got %q", lines[2])
+	}
+	if lines[3] != "" {
+		t.Errorf("line 3: expected blank separator, got %q", lines[3])
+	}
+
+	// Record lines: string body is unquoted, object body stays as JSON
+	expectedLine4 := "2026-07-09T12:00:00Z: [agent] Starting query"
+	if lines[4] != expectedLine4 {
+		t.Errorf("line 4: expected %q, got %q", expectedLine4, lines[4])
+	}
+	expectedLine5 := `2026-07-09T12:00:01Z: {"tool":"bash"}`
+	if lines[5] != expectedLine5 {
+		t.Errorf("line 5: expected %q, got %q", expectedLine5, lines[5])
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {

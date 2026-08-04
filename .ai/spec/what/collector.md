@@ -44,7 +44,7 @@ Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTele
 9. The Collector listens on port 4317 (gRPC/TLS) and 4318 (HTTPS) for OTLP connections.
 10. The Collector connects to PostgreSQL using credentials injected via environment variable (`POSTGRES_CONNECTION_STRING`). The connection uses TLS (`sslmode=require`).
 11. A health check endpoint runs on port 13133.
-12. The admin API runs on port 8080 over HTTPS (GET/DELETE log records by agentic run ID).
+12. The admin API runs on port 8080 over HTTPS (GET/DELETE log records by agentic run ID). GET supports `format=text` query parameter for plain-text output (`text/plain`): a metadata header (`agentic_run_id`, `records`, `has_more`), blank line, then one `timestamp: body` per line. Default is JSON with full record fields.
 13. Cluster-facing Prometheus metrics are served on port 8888 over HTTPS via the `https_metrics` extension (reverse-proxies localhost-only stock telemetry pull).
 
 ### TLS

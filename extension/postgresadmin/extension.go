@@ -285,6 +285,26 @@ func (p *postgresAdmin) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 		records = records[:limit]
 	}
 
+	// Note: error responses always return JSON regardless of the format parameter.
+	// This is intentional — errors are consumed programmatically (status code + message).
+	if r.URL.Query().Get("format") == "text" {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, "agentic_run_id: %s\n", agenticRunID)
+		_, _ = fmt.Fprintf(w, "records: %d\n", len(records))
+		_, _ = fmt.Fprintf(w, "has_more: %v\n", hasMore)
+		_, _ = fmt.Fprintln(w)
+		for _, rec := range records {
+			var unquoted string
+			if err := json.Unmarshal(rec.Body, &unquoted); err == nil {
+				_, _ = fmt.Fprintf(w, "%s: %s\n", rec.Timestamp.Format(time.RFC3339Nano), unquoted)
+			} else {
+				_, _ = fmt.Fprintf(w, "%s: %s\n", rec.Timestamp.Format(time.RFC3339Nano), string(rec.Body))
+			}
+		}
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	writeJSON(w, getResponse{
 		AgenticRunID: agenticRunID,
