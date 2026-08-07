@@ -7,7 +7,7 @@ require (
 	github.com/pashagolub/pgxmock/v5 v5.1.0
 	go.opentelemetry.io/collector/component v1.63.0
 	go.opentelemetry.io/collector/config/configoptional v1.63.0
-	go.opentelemetry.io/collector/config/configretry v1.63.0
+	go.opentelemetry.io/collector/config/configretry v1.64.0
 	go.opentelemetry.io/collector/exporter v1.63.0
 	go.opentelemetry.io/collector/exporter/exporterhelper v0.157.0
 	go.opentelemetry.io/collector/pdata v1.63.0
