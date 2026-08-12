@@ -122,8 +122,9 @@ curl "https://localhost:8080/api/v1/logs?agentic_run_id=550e8400-e29b-41d4-a716-
 | `phase`         | no       | —       | Filter by phase within the run               |
 | `limit`         | no       | 100     | Max records to return (capped at 1000)       |
 | `after`         | no       | 0       | Cursor: return records with id > N           |
+| `format`        | no       | json    | Set to `text` for plain-text output          |
 
-Response:
+#### JSON response (default)
 ```json
 {
   "agentic_run_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -134,6 +135,24 @@ Response:
   ],
   "has_more": false
 }
+```
+
+#### Plain-text response (`format=text`)
+
+```bash
+curl "https://localhost:8080/api/v1/logs?agentic_run_id=550e8400-e29b-41d4-a716-446655440000&format=text"
+```
+
+Returns `text/plain` with a metadata header, blank line, then one `timestamp: body` per line:
+
+```text
+agentic_run_id: 550e8400-e29b-41d4-a716-446655440000
+records: 3
+has_more: false
+
+2026-07-09T12:00:00Z: [agent] Starting query (model=gpt-5.4, provider=openai)
+2026-07-09T12:00:01.404171Z: HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2026-07-09T12:00:02.174204Z: [provider:run] thinking: **Investigating pods in namespace**...
 ```
 
 ### DELETE /api/v1/logs

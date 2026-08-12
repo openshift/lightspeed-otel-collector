@@ -7,7 +7,6 @@ Custom OpenTelemetry collector for OpenShift Lightspeed. Collects, processes, an
 | Layer | Path | Purpose |
 |---|---|---|
 | **what/** | `.ai/spec/what/` | Behavioral rules. What the system must do. Implementation-agnostic. |
-| **how/** | `.ai/spec/how/` | Codebase navigation. How the code is organized. Implementation-specific. |
 
 ## Scope
 

@@ -34,7 +34,9 @@ Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTele
 7. The routing configuration supports:
    - **Logs:** routed by `service.name` attribute — Lightspeed services → PostgreSQL, unmatched → dropped
    - **Traces:** all forwarded to a configurable tracing backend (`TRACES_BACKEND_ENDPOINT` env var)
-   - **Metrics:** no pipeline defined in routing mode → currently silently dropped. `[PLANNED]` Add a metrics pipeline or explicit no-op exporter with observable error metrics to comply with constraint 2.
+   - **Metrics:** no pipeline defined in routing mode.
+     - _Current behavior_ `[KNOWN VIOLATION of Constraint 2]`: metrics are silently dropped with no log or observable signal.
+     - _Required behavior_: when no pipeline matches, the collector MUST log a warning and expose a metric counter for dropped spans/metrics — silent drops are prohibited (Constraint 2). `[PLANNED]` Add a metrics pipeline or explicit no-op exporter with observable error metrics.
 
 ### Deployment
 
@@ -42,7 +44,7 @@ Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTele
 9. The Collector listens on port 4317 (gRPC/TLS) and 4318 (HTTPS) for OTLP connections.
 10. The Collector connects to PostgreSQL using credentials injected via environment variable (`POSTGRES_CONNECTION_STRING`). The connection uses TLS (`sslmode=require`).
 11. A health check endpoint runs on port 13133.
-12. The admin API runs on port 8080 over HTTPS (GET/DELETE log records by agentic run ID).
+12. The admin API runs on port 8080 over HTTPS (GET/DELETE log records by agentic run ID). GET supports `format=text` query parameter for plain-text output (`text/plain`): a metadata header (`agentic_run_id`, `records`, `has_more`), blank line, then one `timestamp: body` per line. Default is JSON with full record fields.
 13. Cluster-facing Prometheus metrics are served on port 8888 over HTTPS via the `https_metrics` extension (reverse-proxies localhost-only stock telemetry pull).
 
 ### TLS
@@ -211,4 +213,4 @@ service:
 ## Cross-References
 
 - `what/postgres-exporter.md` — Custom `postgresexporter` implementation details
-- `what/pipeline.md` — Pipeline architecture (hub/spoke for fleet observability — future scope)
+- `what/pipeline.md` — Pipeline architecture. `[PLANNED]` Hub/spoke for fleet observability is not yet implemented — see PLANNED sections in `pipeline.md`.
