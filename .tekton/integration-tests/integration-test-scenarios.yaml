@@ -1,0 +1,36 @@
+# IntegrationTestScenario for lightspeed-otel-collector e2e.
+# Triggers on lightspeed-otel-collector component builds.
+# Provisions an ephemeral Hypershift cluster, deploys PG + collector from SNAPSHOT,
+# runs go test -tags=e2e, then deprovisions.
+#
+# Apply to tenant namespace: kubectl apply -f .tekton/integration-tests/integration-test-scenarios.yaml
+---
+apiVersion: appstudio.redhat.com/v1beta2
+kind: IntegrationTestScenario
+metadata:
+  name: otel-collector-e2e-tests
+  namespace: crt-nshift-lightspeed-tenant
+  labels:
+    test.appstudio.openshift.io/optional: "true"
+spec:
+  application: ols
+  contexts:
+    - description: OTel Collector e2e (ingest + admin API)
+      name: component_lightspeed-otel-collector
+  params:
+    - name: test-name
+      value: otel-collector-e2e-tests
+    - name: namespace
+      value: e2e-otel-collector
+    - name: openshift-version-prefix
+      value: "4.19."
+  resolverRef:
+    resolver: git
+    resourceKind: pipeline
+    params:
+      - name: url
+        value: https://github.com/openshift/lightspeed-otel-collector
+      - name: revision
+        value: main
+      - name: pathInRepo
+        value: .tekton/integration-tests/pipelines/otel-collector-e2e-pipeline.yaml
