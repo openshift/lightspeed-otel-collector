@@ -28,7 +28,7 @@ RUN cd cmd/otelcol-lightspeed && \
 
 
 # Stage 2: Minimal runtime image.
-FROM registry.redhat.io/ubi9/ubi-minimal:9.8-1785906621
+FROM registry.redhat.io/ubi9/ubi-minimal:9.8-1786987521
 
 WORKDIR /
 
