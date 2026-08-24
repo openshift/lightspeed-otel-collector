@@ -392,6 +392,13 @@ func TestEnsureTableCreatesSchemaAndTable(t *testing.T) {
 		WillReturnResult(pgxmock.NewResult("CREATE SCHEMA", 0))
 	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS "templogs"\."logs"`).
 		WillReturnResult(pgxmock.NewResult("CREATE TABLE", 0))
+
+	// Migration check: trace_id column does not exist (new installation)
+	rows := pgxmock.NewRows([]string{"exists"}).AddRow(false)
+	mock.ExpectQuery(`SELECT EXISTS`).
+		WithArgs("templogs", "logs").
+		WillReturnRows(rows)
+
 	mock.ExpectExec(`CREATE INDEX IF NOT EXISTS "idx_templogs_logs_agentic_run_id"`).
 		WillReturnResult(pgxmock.NewResult("CREATE INDEX", 0))
 	mock.ExpectExec(`CREATE INDEX IF NOT EXISTS "idx_templogs_logs_run_phase"`).
@@ -449,6 +456,69 @@ func TestEnsureTableFailsOnIndexError(t *testing.T) {
 		WillReturnError(fmt.Errorf("permission denied"))
 
 	err := admin.ensureTable(context.Background())
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+}
+
+// --- Migration tests ---
+
+func TestMigrateFromTraceIDNoOp(t *testing.T) {
+	admin, mock := newTestAdmin(t)
+	defer mock.Close()
+
+	rows := pgxmock.NewRows([]string{"exists"}).AddRow(false)
+	mock.ExpectQuery(`SELECT EXISTS`).
+		WithArgs("templogs", "logs").
+		WillReturnRows(rows)
+
+	err := admin.migrateFromTraceID(context.Background(), `"templogs"."logs"`)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("unmet expectations: %v", err)
+	}
+}
+
+func TestMigrateFromTraceIDSuccess(t *testing.T) {
+	admin, mock := newTestAdmin(t)
+	defer mock.Close()
+
+	rows := pgxmock.NewRows([]string{"exists"}).AddRow(true)
+	mock.ExpectQuery(`SELECT EXISTS`).
+		WithArgs("templogs", "logs").
+		WillReturnRows(rows)
+
+	mock.ExpectExec(`DROP INDEX IF EXISTS`).
+		WillReturnResult(pgxmock.NewResult("DROP INDEX", 0))
+
+	mock.ExpectExec(`ALTER TABLE "templogs"\."logs" RENAME COLUMN trace_id TO agentic_run_id`).
+		WillReturnResult(pgxmock.NewResult("ALTER TABLE", 0))
+
+	mock.ExpectExec(`ALTER TABLE "templogs"\."logs" ADD COLUMN IF NOT EXISTS phase`).
+		WillReturnResult(pgxmock.NewResult("ALTER TABLE", 0))
+
+	err := admin.migrateFromTraceID(context.Background(), `"templogs"."logs"`)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("unmet expectations: %v", err)
+	}
+}
+
+func TestMigrateFromTraceIDCheckError(t *testing.T) {
+	admin, mock := newTestAdmin(t)
+	defer mock.Close()
+
+	mock.ExpectQuery(`SELECT EXISTS`).
+		WithArgs("templogs", "logs").
+		WillReturnError(fmt.Errorf("connection error"))
+
+	err := admin.migrateFromTraceID(context.Background(), `"templogs"."logs"`)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
