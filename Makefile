@@ -12,7 +12,7 @@ PLATFORM ?= linux/amd64
 CONTAINER_TOOL ?= $(shell which podman >/dev/null 2>&1 && echo podman || echo docker)
 
 # Collector builder version — must match otelcol_version in builder-config.yaml.
-OCB_VERSION ?= 0.155.0
+OCB_VERSION ?= 0.159.0
 OCB ?= $(LOCALBIN)/ocb
 
 LOCALBIN ?= $(shell pwd)/bin
