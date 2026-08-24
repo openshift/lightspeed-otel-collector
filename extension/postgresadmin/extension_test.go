@@ -392,6 +392,7 @@ func TestEnsureTableCreatesSchemaAndTable(t *testing.T) {
 		WillReturnResult(pgxmock.NewResult("CREATE SCHEMA", 0))
 	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS "templogs"\."logs"`).
 		WillReturnResult(pgxmock.NewResult("CREATE TABLE", 0))
+
 	mock.ExpectExec(`CREATE INDEX IF NOT EXISTS "idx_templogs_logs_agentic_run_id"`).
 		WillReturnResult(pgxmock.NewResult("CREATE INDEX", 0))
 	mock.ExpectExec(`CREATE INDEX IF NOT EXISTS "idx_templogs_logs_run_phase"`).

@@ -112,10 +112,9 @@ func (p *postgresAdmin) Shutdown(ctx context.Context) error {
 }
 
 // ensureTable creates the schema, table, and indexes if they don't already
-// exist. All statements use IF NOT EXISTS so this is idempotent and safe to
-// run on every startup. Extensions start before pipelines in the OTel
-// Collector lifecycle, so the table is guaranteed to exist before the
-// exporter writes its first batch.
+// exist. All statements are idempotent and safe to run on every startup.
+// Extensions start before pipelines in the OTel Collector lifecycle, so the
+// table is guaranteed to exist before the exporter writes its first batch.
 func (p *postgresAdmin) ensureTable(ctx context.Context) error {
 	safeSchema := pgx.Identifier{p.config.Schema}.Sanitize()
 	safeTable := pgx.Identifier{p.config.Schema, p.config.LogsTable}.Sanitize()
