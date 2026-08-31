@@ -8,7 +8,7 @@ Companion work (out of scope here): lightspeed-operator Service, ServiceMonitor 
 
 ## Why
 
-1. Upstream otelcol **0.155** `service.telemetry.metrics.readers[].pull.exporter.prometheus` only starts a plain HTTP server (`host` / `port`). The otelconf `Prometheus` config has **no TLS fields**.
+1. Upstream otelcol (pinned at **0.159.0** in `builder-config.yaml`) `service.telemetry.metrics.readers[].pull.exporter.prometheus` only starts a plain HTTP server (`host` / `port`). The otelconf `Prometheus` config has **no TLS fields** — the limitation this extension works around still holds at the pinned version.
 2. Default telemetry bind is effectively localhost-oriented; cluster scrapers need a cluster-facing endpoint.
 3. This distribution’s TLS rule (see `collector.md`) requires TLS for external channels. Metrics scraped by Prometheus from another namespace are external.
 

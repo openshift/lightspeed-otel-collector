@@ -21,6 +21,8 @@ AI agents. Content is optimized for precision and machine consumption.
 | Task | Start here |
 |---|---|
 | Understand the system | `what/system-overview.md` |
+| OCB build, collector config, ports, TLS, deployment | `what/collector.md` |
+| PostgreSQL log exporter (templog schema, batch insert) | `what/postgres-exporter.md` |
 | Understand the data pipeline | `what/pipeline.md` |
 | HTTPS Prometheus metrics (OLS-3656) | `what/https-metrics.md` |
 

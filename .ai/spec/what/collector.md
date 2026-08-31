@@ -84,7 +84,7 @@ The OTel Collector starts extensions before pipelines. The `postgres_admin` exte
     - **Stage 1:** `ubi9/go-toolset` — installs OCB, runs `ocb --config=builder-config.yaml` to produce the binary.
     - **Stage 2:** `ubi9/ubi-minimal` — minimal runtime with the Collector binary only.
 19. The image runs as non-root (UID 65532).
-20. The image is built and shipped via Konflux (pipeline definition is a separate ticket).
+20. The image is built and shipped via Konflux. Pipeline definitions live in `.tekton/` (`lightspeed-otel-collector-pull-request.yaml`, `lightspeed-otel-collector-push.yaml`) with an `integration-tests/` directory.
 
 ## Repository Contents
 
@@ -95,8 +95,12 @@ The OTel Collector starts extensions before pipelines. The `postgres_admin` exte
 | `config-router.yaml` | Reference runtime config (routing mode) |
 | `postgresexporter/` | Custom PostgreSQL exporter |
 | `extension/postgresadmin/` | Custom admin HTTP extension |
+| `extension/httpsmetrics/` | Custom HTTPS metrics reverse-proxy extension (OLS-3656) |
+| `cmd/otelcol-lightspeed/` | OCB-generated distribution main + components |
 | `Dockerfile` | Multi-stage UBI9 container build |
 | `Makefile` | Build, test, container targets |
+| `.tekton/` | Konflux build pipelines (PR + push) |
+| `test/e2e/` | End-to-end tests (Konflux integration, OLS-3745) |
 | `README.md` | Project documentation |
 | `.ai/spec/` | Specifications |
 
