@@ -14,6 +14,7 @@ Custom OTel Collector exporter that writes OTLP log records to PostgreSQL.
    - **`event`** — from the log record's attributes (key: `event`). This is the event discriminator (e.g., `audit.agenticrun.received`, `audit.agent.tool.call`).
    - **`body`** — the log record's body, serialized as JSONB. If serialization fails, wrapped as `{"raw": "..."}`.
 3. The exporter writes extracted fields into the `templogs.logs` table.
+3a. Log records that lack the `"agenticrun.uid"` attribute are skipped (not written) — they are unqueryable without a run ID. The exporter emits a `Warn` log recording how many records were skipped, so the drop is observable (consistent with Constraint 2: no silent data loss).
 
 ### Batch Insert
 
