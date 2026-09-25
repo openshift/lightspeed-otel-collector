@@ -172,6 +172,8 @@ spec:
                 value: "/credentials/$(steps.get-kubeconfig.results.kubeconfig)"
               - name: OTEL_COLLECTOR_IMAGE
                 value: "$(steps.extract-image.results.collector-image)"
+              - name: COMMIT
+                value: "$(steps.extract-image.results.commit)"
               - name: TEST_NAMESPACE
                 value: "$(params.namespace)"
             image: registry.redhat.io/openshift4/ose-cli:latest
@@ -179,7 +181,6 @@ spec:
               set -euo pipefail
               dnf -y install git make golang
 
-              COMMIT="$(cat $(steps.extract-image.results.commit.path))"
               git clone --depth=1 https://github.com/openshift/lightspeed-otel-collector.git /workspace/repo
               cd /workspace/repo
               git fetch --depth=1 origin "${COMMIT}"
