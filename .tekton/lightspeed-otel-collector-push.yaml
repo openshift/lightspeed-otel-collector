@@ -9,7 +9,7 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push" &&
       target_branch == "main" &&
-      (".tekton/lightspeed-otel-collector-push.yaml".pathChanged() || "Dockerfile".pathChanged() || "LICENSE".pathChanged() || "go.*".pathChanged() || "postgresexporter/***".pathChanged() || "extension/***".pathChanged() || "cmd/***".pathChanged() || "builder-config.yaml".pathChanged() || "Makefile".pathChanged())
+      (".tekton/lightspeed-otel-collector-push.yaml".pathChanged() || ".tekton/integration-tests/***".pathChanged() || "Dockerfile".pathChanged() || "LICENSE".pathChanged() || "go.*".pathChanged() || "postgresexporter/***".pathChanged() || "extension/***".pathChanged() || "cmd/***".pathChanged() || "builder-config.yaml".pathChanged() || "Makefile".pathChanged())
   creationTimestamp:
   labels:
     appstudio.openshift.io/application: ols

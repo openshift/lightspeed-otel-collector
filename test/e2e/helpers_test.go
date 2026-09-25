@@ -735,8 +735,7 @@ spec:
       labels:
         app: otel-collector
     spec:
-      securityContext:
-        fsGroup: 65532
+      # Let OpenShift's restricted SCC assign a namespace-valid fsGroup.
       containers:
       - name: collector
         image: {{.Image}}

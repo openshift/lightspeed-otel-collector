@@ -134,7 +134,7 @@ spec:
                 valueFrom:
                   fieldRef:
                     fieldPath: metadata.labels['appstudio.openshift.io/component']
-            image: registry.redhat.io/openshift4/ose-cli:latest
+            image: registry.redhat.io/openshift4/ose-cli-rhel9:v4.19
             script: |
               set -euo pipefail
               dnf -y install jq
@@ -172,14 +172,15 @@ spec:
                 value: "/credentials/$(steps.get-kubeconfig.results.kubeconfig)"
               - name: OTEL_COLLECTOR_IMAGE
                 value: "$(steps.extract-image.results.collector-image)"
+              - name: COMMIT
+                value: "$(steps.extract-image.results.commit)"
               - name: TEST_NAMESPACE
                 value: "$(params.namespace)"
-            image: registry.redhat.io/openshift4/ose-cli:latest
+            image: registry.redhat.io/openshift4/ose-cli-rhel9:v4.19
             script: |
               set -euo pipefail
               dnf -y install git make golang
 
-              COMMIT="$(cat $(steps.extract-image.results.commit.path))"
               git clone --depth=1 https://github.com/openshift/lightspeed-otel-collector.git /workspace/repo
               cd /workspace/repo
               git fetch --depth=1 origin "${COMMIT}"
@@ -212,12 +213,22 @@ spec:
               #!/bin/bash
               set -x
               cd "${ARTIFACT_DIR}"
+              oc get deployment otel-collector -n "${NAMESPACE}" -o yaml > deployment.yaml 2>/dev/null || true
               oc get pods -n "${NAMESPACE}" -o yaml > pods.yaml 2>/dev/null || true
               oc logs -n "${NAMESPACE}" deployment/otel-collector --tail=500 > collector-logs.txt 2>/dev/null || true
+              oc logs -n "${NAMESPACE}" deployment/otel-collector --previous --tail=500 > collector-previous-logs.txt 2>/dev/null || true
               oc logs -n "${NAMESPACE}" -l app=postgres --tail=200 > postgres-logs.txt 2>/dev/null || true
               oc get events -n "${NAMESPACE}" --sort-by='.lastTimestamp' > events.txt 2>/dev/null || true
               echo "Artifacts gathered:"
               ls -la "${ARTIFACT_DIR}"
+              for artifact in deployment.yaml pods.yaml events.txt collector-logs.txt collector-previous-logs.txt postgres-logs.txt; do
+                if [ -s "${artifact}" ]; then
+                  printf '\n=== %s ===\n' "${artifact}"
+                  cat "${artifact}"
+                else
+                  printf '%s is empty or unavailable\n' "${artifact}"
+                fi
+              done
           - name: fail-if-any-step-failed
             ref:
               resolver: git
