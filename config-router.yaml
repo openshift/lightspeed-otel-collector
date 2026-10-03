@@ -2,8 +2,8 @@
 # Routes telemetry to different destinations based on signal type and attributes.
 #
 # Routing rules:
-#   - Logs   → routed by service.name to PostgreSQL or a downstream collector
-#   - Traces → routed by service.name to tracing backend
+#   - Logs   → lightspeed-service to PostgreSQL; unmatched logs to debug
+#   - Traces → all to backend; allowlisted services also export traces for data collection as native JSONL
 #   - Metrics → no pipeline defined, silently dropped
 
 receivers:
@@ -25,10 +25,8 @@ processors:
     timeout: 1s
     send_batch_size: 100
 
-# Exporters define all possible destinations. Each exporter listed here can be
-# referenced by one or more pipelines below. If you add a new exporter for
-# logs or traces, add a routing condition to direct traffic to it — otherwise
-# unmatched records are dropped (logs) or forwarded to the shared backend (traces).
+# Exporters define all possible destinations and are referenced by pipelines.
+# Route logs, traces and trace data collection through the connectors below.
 exporters:
   # Lightspeed logs → PostgreSQL.
   postgres:
@@ -49,13 +47,24 @@ exporters:
     tls:
       insecure: false
 
+  # Allowlisted traces for data collection → native OTLP JSONL.
+  file/data_collection:
+    path: /var/lib/lightspeed-data/otel/traces.jsonl
+    format: json
+    create_directory: true
+    rotation:
+      max_megabytes: 1
+      max_backups: 100
+      max_days: 1
+
   # Debug — prints to stdout (remove in production).
   debug:
     verbosity: basic
 
-# Routing connectors evaluate OTTL conditions on each record and send it
-# to the matching sub-pipeline. Unmatched records go to default_pipelines.
-# Add/remove conditions here to control which services write to PostgreSQL.
+# Routing connectors evaluate OTTL conditions and send matching telemetry to
+# sub-pipelines. Unmatched telemetry follows configured defaults, if any;
+# without a default pipeline, unmatched telemetry is dropped.
+# Update the routing tables below to adjust logs, backend traces or trace data collection.
 connectors:
   routing/logs:
     # No generic logs destination exists, so unmatched logs are dropped (debug).
@@ -74,6 +83,17 @@ connectors:
     table:
       # All traces go to the tracing backend. Add conditions here if you
       # need to route specific services differently in the future.
+      - context: resource
+        condition: "true"
+        pipelines: [traces/lightspeed]
+
+  # Only allowlisted services route traces to data collection.
+  # Unmatched resources have no default route.
+  routing/data_collection:
+    table:
+      - context: resource
+        condition: attributes["service.name"] == "lightspeed-agentic-operator" or attributes["service.name"] == "lightspeed-agentic-sandbox"
+        pipelines: [traces/data_collection]
 
 extensions:
   health_check:
@@ -119,14 +139,21 @@ service:
       exporters: [debug]
 
     # --- Traces ---
+    # Do not batch here or in traces/data_collection: count-based batching can combine
+    # valid requests into >1 MiB writes rejected by FileExporter after the
+    # sender has already received success. Batch only the backend branch.
     traces:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [routing/traces]
+      exporters: [routing/traces, routing/data_collection]
 
     traces/lightspeed:
       receivers: [routing/traces]
+      processors: [batch]
       exporters: [otlp/tracing]
+
+    traces/data_collection:
+      receivers: [routing/data_collection]
+      exporters: [file/data_collection]
 
     # --- Metrics: no pipeline defined → silently dropped ---
 

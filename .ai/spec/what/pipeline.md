@@ -1,6 +1,6 @@
 # Pipeline
 
-The data pipeline: how telemetry flows from OLS components through the collector to backends.
+The data pipeline: how telemetry flows from OLS components through the collector to its configured destinations.
 
 ## Behavioral Rules
 
@@ -27,8 +27,7 @@ The data pipeline: how telemetry flows from OLS components through the collector
 10. Pipelines (receiver → processor → exporter chains) MUST be defined per signal type (metrics, traces, logs).
 11. A misconfigured pipeline MUST fail at startup with a clear error, not at runtime.
 
-## Planned Changes
+### Trace Data Collection
 
-| Ticket | Summary |
-|---|---|
-| — | All rules are planned — initial design |
+12. In `config.yaml`, the top-level trace pipeline sends received traces to `nop` and `routing/data_collection`. In `config-router.yaml`, it fans out to `routing/traces` and `routing/data_collection`, with `routing/traces` forwarding all traces to the configured backend. `routing/data_collection` matches resources whose `service.name` is exactly `lightspeed-agentic-operator` or `lightspeed-agentic-sandbox` and routes their traces to `traces/data_collection`, which writes native OTLP JSONL with the stock `file/data_collection` FileExporter and preserves resource, scope, span, and event structure. The top-level trace pipelines and `traces/data_collection` are unbatched; in routing mode, only the `traces/lightspeed` backend trace pipeline applies `batch`. See `what/data-collection.md` for FileExporter version, path, rotation, retention, and failure behavior.
+

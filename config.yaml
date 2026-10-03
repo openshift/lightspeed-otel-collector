@@ -40,6 +40,22 @@ exporters:
       queue_size: 1000
       storage: file_storage
 
+  nop: {}
+  file/data_collection:
+    path: /var/lib/lightspeed-data/otel/traces.jsonl
+    format: json
+    create_directory: true
+    rotation:
+      max_megabytes: 1
+      max_backups: 100
+      max_days: 1
+
+connectors:
+  routing/data_collection:
+    table:
+      - context: resource
+        condition: attributes["service.name"] == "lightspeed-agentic-operator" or attributes["service.name"] == "lightspeed-agentic-sandbox"
+        pipelines: [traces/data_collection]
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133
@@ -76,10 +92,14 @@ service:
       exporters: [postgres]
 
     # Accept traces so the OTLP receiver doesn't return UNIMPLEMENTED.
-    # No trace backend configured in simple mode — silently drop.
+    # Retain the nop sink while exporting allowlisted traces for data collection as native OTLP JSONL.
     traces:
       receivers: [otlp]
-      exporters: [nop]
+      exporters: [nop, routing/data_collection]
+
+    traces/data_collection:
+      receivers: [routing/data_collection]
+      exporters: [file/data_collection]
 
   telemetry:
     logs:

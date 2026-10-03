@@ -18,6 +18,9 @@ exporters:
   - gomod: github.com/openshift/lightspeed-otel-collector/postgresexporter v0.0.0
     path: ./postgresexporter
 
+  # Standard FileExporter — writes matching traces as native OTLP JSONL.
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.159.0
+
   # Standard OTLP exporter — forwards telemetry to downstream collectors via gRPC.
   - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.159.0
 

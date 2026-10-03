@@ -1,5 +1,7 @@
 cloud.google.com/go/compute/metadata v0.9.0 h1:pDUj4QMoPejqq20dK0Pg2N4yG9zIkYGdBtwLoEkH9Zs=
 cloud.google.com/go/compute/metadata v0.9.0/go.mod h1:E0bWwX5wTnLPedCKqk3pJmVgCBSM6qQI1yTBdEb3C10=
+github.com/DeRuina/timberjack v1.4.6 h1:ixA4vWcXt160M69ZbhUTLfSOOlEtEE+7hHEgDWIXUiI=
+github.com/DeRuina/timberjack v1.4.6/go.mod h1:RLoeQrwrCGIEF8gO5nV5b/gMD0QIy7bzQhBUgpp1EqE=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.36.0 h1:3SdxXLkgAfiHRWcGTq6fneq9jgoJzneiY0yPQnjoT2E=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.36.0/go.mod h1:1iIdl0k+ppn9wT0wzR9H7HkSvIui/4qgtnKW10cQtds=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
@@ -40,6 +42,8 @@ github.com/emicklei/go-restful/v3 v3.13.0 h1:C4Bl2xDndpU6nJ4bc1jXd+uTmYPVUwkD6bF
 github.com/emicklei/go-restful/v3 v3.13.0/go.mod h1:6n3XBCmQQb25CM2LCACGz8ukIrRry+4bhvbpWn3mrbc=
 github.com/felixge/httpsnoop v1.1.0 h1:3YtUj32ZZkqZtt3sZZsClsymw/QDuVfpNhoA31zeORc=
 github.com/felixge/httpsnoop v1.1.0/go.mod h1:Zqxgdd+1Rkcz8euOqdr7lqgCRJztwr5hp9vDSi5UZCE=
+github.com/fortytw2/leaktest v1.3.0 h1:u8491cBMTQ8ft8aeV+adlcytMZylmA5nnwwkRZjI8vw=
+github.com/fortytw2/leaktest v1.3.0/go.mod h1:jDsjWgpAGjm2CA7WthBh/CdZYEPF31XHquHwclZch5g=
 github.com/foxboron/go-tpm-keyfiles v0.0.0-20251226215517-609e4778396f h1:RJ+BDPLSHQO7cSjKBqjPJSbi1qfk9WcsjQDtZiw3dZw=
 github.com/foxboron/go-tpm-keyfiles v0.0.0-20251226215517-609e4778396f/go.mod h1:VHbbch/X4roIY22jL1s3qRbZhCiRIgUAF/PdSUcx2io=
 github.com/fxamacker/cbor/v2 v2.9.3 h1:oQBnFATpNdY8gJHTndDDv5Xl4QqNaz51G5LLEPhng3Q=
@@ -163,6 +167,12 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/open-telemetry/opentelemetry-collector-contrib/connector/routingconnector v0.159.0 h1:eui64EPMYUuOkmE3jjHaLLkP0rsobriX8HKZi4UZSX8=
 github.com/open-telemetry/opentelemetry-collector-contrib/connector/routingconnector v0.159.0/go.mod h1:Lf2mQqgMkIAN5rEXjFpflB08y6pNWdV74XNhct5W48o=
+github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.159.0 h1:zmX0ycSRIQ3mWsslGHfcubuBg6dGcl/qY4V7GroNntw=
+github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.159.0/go.mod h1:0yd2TRqTYpl2eDk4zMX8ozH4tXnc7I4/5p1t3mD4q/c=
+github.com/open-telemetry/opentelemetry-collector-contrib/extension/encoding v0.159.0 h1:JysfbiKHTaevUY7WAEMDR3WBNIogpFG6nbsdmo7PuGI=
+github.com/open-telemetry/opentelemetry-collector-contrib/extension/encoding v0.159.0/go.mod h1:otM3uy9Ib170fIu3mHajV9ZEMmbX9XT+6v0BQxfbMtk=
+github.com/open-telemetry/opentelemetry-collector-contrib/extension/encoding/otlpencodingextension v0.159.0 h1:Y0HVYChomT1KLvVquZ1qSjBjp0CR+q9rn6pThaLWVwk=
+github.com/open-telemetry/opentelemetry-collector-contrib/extension/encoding/otlpencodingextension v0.159.0/go.mod h1:cFolDw37Lj+OQAXR0Ni2iNmsilQl+QAxp4IsZEzhYV4=
 github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.159.0 h1:IXFoitbK+lwdX5Gwiq0MgW0oEWKQH+E3KpWdtlv96+8=
 github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.159.0/go.mod h1:G7SyiB6wP5mt/kiK5Wowh59LhnYhhUJ7U90Pd7RN35E=
 github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/filestorage v0.159.0 h1:qRhK73NZ8yeV24UTQ99iKRRKuNzyN2XuGtmJDgOB01I=
@@ -173,6 +183,8 @@ github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal 
 github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal v0.159.0/go.mod h1:MIo6UvOnouNO14chDWK/kaXapjwGHb9U0xk6GegYMvo=
 github.com/open-telemetry/opentelemetry-collector-contrib/internal/healthcheck v0.159.0 h1:7qbCYnaLn6bje+BKRkNGOXKY4OCJROSGbO34WfRnj28=
 github.com/open-telemetry/opentelemetry-collector-contrib/internal/healthcheck v0.159.0/go.mod h1:ASd7/pjUxbEM+V4qSnggHVUgKsRaXPwzkBO9/Xygp/g=
+github.com/open-telemetry/opentelemetry-collector-contrib/internal/sharedcomponent v0.159.0 h1:UohGbvC8VwHANo+XkQaiCp/SOHk2lUnZrhlh6ilurus=
+github.com/open-telemetry/opentelemetry-collector-contrib/internal/sharedcomponent v0.159.0/go.mod h1:yGl0PMHd0OY2gynDHcz02j2Iq+1pqzFTZ5F4hZFXhfk=
 github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl v0.159.0 h1:PB+0S/90C9SN7LyUR76bDVvwrL7DDQ7Q/A4BRDmUkD8=
 github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl v0.159.0/go.mod h1:PoR6szOvbxES/Xntr9+33QdfSpBquG9vkA0pB3PPEYY=
 github.com/open-telemetry/opentelemetry-collector-contrib/pkg/pdatatest v0.159.0 h1:7JKqFkaTAaLCgP4XY57EAIDXGD4xb0NnlNVhIZ0fEd8=

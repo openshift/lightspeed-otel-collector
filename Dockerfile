@@ -41,10 +41,10 @@ COPY LICENSE /licenses/.
 
 LABEL name="openshift-lightspeed/otelcol-lightspeed-rhel9" \
       summary="Custom OpenTelemetry Collector for OpenShift Lightspeed" \
-      description="Receives OTLP telemetry and writes logs directly to PostgreSQL." \
+      description="Receives OTLP telemetry, writes logs to PostgreSQL, and exports allowlisted traces for data collection as native OTLP JSONL." \
       io.k8s.display-name="OTel Collector — Lightspeed" \
-      io.k8s.description="Custom OpenTelemetry Collector distribution that exports logs to PostgreSQL." \
-      io.openshift.tags="opentelemetry,otel,collector,postgres,logs" \
+      io.k8s.description="Custom OpenTelemetry Collector distribution that writes logs to PostgreSQL and exports allowlisted traces for data collection as native OTLP JSONL." \
+      io.openshift.tags="opentelemetry,otel,collector,postgres,logs,traces,jsonl" \
       cpe="cpe:/a:redhat:openshift_lightspeed:1::el9"
 
 # OTLP gRPC/HTTP, health check, admin API, and metrics ports.

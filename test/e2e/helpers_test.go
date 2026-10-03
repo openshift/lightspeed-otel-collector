@@ -153,6 +153,55 @@ func runKubectl(args ...string) (string, error) {
 	return strings.TrimSpace(stdout.String()), nil
 }
 
+const fileExporterDataRoot = "/var/lib/lightspeed-data/otel"
+
+func collectorPodName(t *testing.T) string {
+	t.Helper()
+	return kubectl(t, "get", "pod", "-n", env.Namespace, "-l", "app=otel-collector",
+		"-o", "jsonpath={.items[0].metadata.name}")
+}
+
+func collectorExec(t *testing.T, args ...string) string {
+	t.Helper()
+	pod := collectorPodName(t)
+	kubectlArgs := []string{"exec", "-n", env.Namespace, pod, "--"}
+	return kubectl(t, append(kubectlArgs, args...)...)
+}
+
+func listCollectorTraceFiles(t *testing.T) []string {
+	t.Helper()
+	out := collectorExec(t, "sh", "-c",
+		`for file in "$1"/*; do [ -f "$file" ] && printf '%s\n' "${file##*/}"; done; exit 0`,
+		"list-trace-files", fileExporterDataRoot)
+	if out == "" {
+		return nil
+	}
+	return strings.Split(out, "\n")
+}
+
+func readCollectorTraceFile(t *testing.T, name string) (string, bool) {
+	t.Helper()
+	if name == "" || name == "." || name == ".." || strings.ContainsAny(name, "/\n") {
+		t.Fatalf("invalid trace filename %q", name)
+	}
+	out, err := runKubectl(
+		"exec", "-n", env.Namespace, collectorPodName(t), "--",
+		"cat", fileExporterDataRoot+"/"+name,
+	)
+	if err != nil {
+		if strings.Contains(err.Error(), "No such file or directory") {
+			return "", false
+		}
+		t.Fatalf("read collector trace file %q: %v", name, err)
+	}
+	return out, true
+}
+
+func collectorLogsSince(t *testing.T, since time.Time) string {
+	t.Helper()
+	return kubectl(t, "logs", "-n", env.Namespace, collectorPodName(t),
+		"--since-time="+since.UTC().Format(time.RFC3339Nano))
+}
 func mustKubectlApply(ns, manifest string) {
 	cmd := exec.Command("kubectl", "apply", "-n", ns, "-f", "-")
 	cmd.Stdin = strings.NewReader(manifest)
@@ -567,6 +616,13 @@ processors:
     timeout: 200ms
     send_batch_size: 50
 
+connectors:
+  routing/data_collection:
+    table:
+      - context: resource
+        condition: attributes["service.name"] == "lightspeed-agentic-operator" or attributes["service.name"] == "lightspeed-agentic-sandbox"
+        pipelines: [traces/data_collection]
+
 exporters:
   postgres:
     connection_string: "${env:POSTGRES_CONNECTION_STRING}"
@@ -582,7 +638,16 @@ exporters:
       num_consumers: 2
       queue_size: 100
       storage: file_storage
-  nop:
+  debug:
+    verbosity: basic
+  file/data_collection:
+    path: /var/lib/lightspeed-data/otel/traces.jsonl
+    format: json
+    create_directory: true
+    rotation:
+      max_megabytes: 1
+      max_backups: 2
+      max_days: 1
 
 extensions:
   health_check:
@@ -605,7 +670,10 @@ service:
       exporters: [postgres]
     traces:
       receivers: [otlp]
-      exporters: [nop]
+      exporters: [debug, routing/data_collection]
+    traces/data_collection:
+      receivers: [routing/data_collection]
+      exporters: [file/data_collection]
   telemetry:
     logs:
       level: info
@@ -672,6 +740,8 @@ spec:
           readOnly: true
         - name: file-storage
           mountPath: /var/lib/otelcol/file_storage
+        - name: trace-data
+          mountPath: /var/lib/lightspeed-data/otel
         readinessProbe:
           httpGet:
             path: /
@@ -691,6 +761,9 @@ spec:
       - name: file-storage
         emptyDir:
           sizeLimit: 100Mi
+      - name: trace-data
+        emptyDir:
+          sizeLimit: 32Mi
 ---
 apiVersion: v1
 kind: Service
