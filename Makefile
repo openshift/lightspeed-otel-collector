@@ -25,11 +25,22 @@ help: ## Show this help.
 
 ##@ Development
 
+# Coverage output directory; prow sets ARTIFACT_DIR, local runs default to .
+ARTIFACT_DIR ?= .
+
+# Go modules containing unit tests (and thus coverage sources).
+UNIT_TEST_MODULES := postgresexporter extension/postgresadmin extension/httpsmetrics
+
 .PHONY: test
 test: ## Run unit tests.
-	cd postgresexporter && go test -v ./...
-	cd extension/postgresadmin && go test -v ./...
-	cd extension/httpsmetrics && go test -v ./...
+	for module in $(UNIT_TEST_MODULES); do (cd $$module && go test -v ./...); done
+
+.PHONY: test-coverage
+test-coverage: ## Run unit tests with coverage and upload the report to Codecov (upload soft-fails).
+	rm -f $(UNIT_TEST_MODULES:%=%/cover.out)
+	for module in $(UNIT_TEST_MODULES); do (cd $$module && go test -covermode=atomic -coverprofile=cover.out ./...); done
+	scripts/merge-go-coverage.sh "$(ARTIFACT_DIR)/coverage.out" $(UNIT_TEST_MODULES:%=%/cover.out)
+	scripts/codecov.sh "$(ARTIFACT_DIR)/coverage.out" unit
 
 .PHONY: test-e2e
 test-e2e: ## Run e2e tests (requires OTEL_COLLECTOR_IMAGE and cluster access via KUBECONFIG).
