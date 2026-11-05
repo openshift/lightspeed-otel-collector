@@ -2,6 +2,11 @@
 cmd/otelcol-lightspeed/otelcol-lightspeed
 bin/
 
+# Test coverage artifacts
+cover.out
+**/cover.out
+coverage.out
+
 # IDE
 .idea/
 *.swp
