@@ -16,20 +16,28 @@ COPY extension/httpsmetrics/go.mod extension/httpsmetrics/go.sum extension/https
 RUN cd cmd/otelcol-lightspeed && go mod download
 
 # Copy source.
-COPY cmd/otelcol-lightspeed/ cmd/otelcol-lightspeed/
+COPY cmd/ cmd/
 COPY postgresexporter/ postgresexporter/
 COPY extension/ extension/
 
 USER root
 
-# Match the operator's FIPS build mode for the collector's Go binary.
+# Build with Go's native FIPS 140-3 crypto provider (pure Go, no CGo/OpenSSL).
+# GOFIPS140=certified selects the certified FIPS module; the binary defaults
+# to fips140=on (see the //go:debug directive in
+# cmd/otelcol-lightspeed/fips.go), keeping FIPS-approved crypto always active
+# (matching the previous strictfipsruntime behavior).
+# GOAMD64 is only consulted when GOARCH=amd64; it is silently ignored for
+# other target architectures (arm64 etc.), so multi-arch builds are unaffected.
 RUN cd cmd/otelcol-lightspeed && \
-    CGO_ENABLED=1 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} \
-    go build -a -tags strictfipsruntime -trimpath -o /workspace/otelcol-lightspeed .
+    CGO_ENABLED=0 GOFIPS140=certified GOAMD64=v2 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} \
+    go build -a -trimpath -o /workspace/otelcol-lightspeed .
+# Verify otelcol-lightspeed targets at most x86-64-v2 (no-op on non-amd64)
+RUN cd cmd/check-isa-level && go build -o /workspace/check-isa-level . && cd /workspace && ./check-isa-level otelcol-lightspeed
 
 
 # Stage 2: Minimal runtime image.
-FROM registry.redhat.io/ubi9/ubi-minimal:9.8-1793050346
+FROM registry.access.redhat.com/ubi9-micro:9.8-1791765224@sha256:ff30602252a3e92706585c7c34cd3c74028eaac4ab815e6b19f8b27562bdd7e3
 
 WORKDIR /
 
