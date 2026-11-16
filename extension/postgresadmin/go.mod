@@ -1,6 +1,6 @@
 module github.com/openshift/lightspeed-otel-collector/extension/postgresadmin
 
-go 1.25.8
+go 1.26.0
 
 require (
 	github.com/jackc/pgx/v5 v5.10.0
@@ -26,6 +26,6 @@ require (
 	go.opentelemetry.io/otel/metric v1.45.0 // indirect
 	go.opentelemetry.io/otel/trace v1.45.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 )
