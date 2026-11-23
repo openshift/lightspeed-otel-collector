@@ -37,7 +37,7 @@ RUN cd cmd/check-isa-level && go build -o /workspace/check-isa-level . && cd /wo
 
 
 # Stage 2: Minimal runtime image.
-FROM registry.access.redhat.com/ubi9-micro:9.8-1791765224@sha256:ff30602252a3e92706585c7c34cd3c74028eaac4ab815e6b19f8b27562bdd7e3
+FROM registry.access.redhat.com/ubi9-micro:9.9-1794478307@sha256:dbd325b96bcd432dd42816d31412bdf1dc0fb973b79ed310344bc23c76c068db
 
 WORKDIR /
 
