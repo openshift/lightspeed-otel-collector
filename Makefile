@@ -29,7 +29,7 @@ help: ## Show this help.
 ARTIFACT_DIR ?= .
 
 # Go modules containing unit tests (and thus coverage sources).
-UNIT_TEST_MODULES := postgresexporter extension/postgresadmin extension/httpsmetrics cmd/otelcol-lightspeed cmd/check-isa-level
+UNIT_TEST_MODULES := postgresexporter dataverseexporter extension/postgresadmin extension/httpsmetrics cmd/otelcol-lightspeed cmd/check-isa-level test/e2e/fakeingress
 
 .PHONY: test
 test: ## Run unit tests.

@@ -94,6 +94,7 @@ require (
 	github.com/open-telemetry/opentelemetry-collector-contrib/internal/sharedcomponent v0.159.0 // indirect
 	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl v0.159.0 // indirect
 	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/status v0.159.0 // indirect
+	github.com/openshift/lightspeed-otel-collector/dataverseexporter v0.0.0
 	github.com/pierrec/lz4/v4 v4.1.29 // indirect
 	github.com/power-devops/perfstat v0.0.0-20260805114148-88456608a4f6 // indirect
 	github.com/prometheus/client_golang v1.24.1 // indirect
@@ -231,3 +232,5 @@ replace github.com/openshift/lightspeed-otel-collector/extension/postgresadmin v
 replace github.com/openshift/lightspeed-otel-collector/extension/httpsmetrics v0.0.0 => ../../extension/httpsmetrics
 
 replace github.com/openshift/lightspeed-otel-collector/postgresexporter v0.0.0 => ../../postgresexporter
+
+replace github.com/openshift/lightspeed-otel-collector/dataverseexporter v0.0.0 => ../../dataverseexporter
