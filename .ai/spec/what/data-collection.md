@@ -6,6 +6,12 @@ behavior, source-file ownership, and the interface for downstream consumers.
 The contract ends at the trace files; downstream conversion and upload belong
 to a separate component.
 
+[PLANNED: OLS-4493] The `dataverse` exporter replaces the FileExporter, the
+trace files, and the consumer interface. Rules 1-6 (resource selection and
+pipeline) remain, with "file branch" read as the data collection branch and
+`dataverse` as its only exporter. Rules 7-19 are removed with the
+`fileexporter` component. See [`dataverse-exporter.md`](dataverse-exporter.md).
+
 ## Resource Selection and Pipeline
 
 1. The file branch MUST consume OTLP traces only. OTLP logs and metrics MUST

@@ -24,6 +24,7 @@ AI agents. Content is optimized for precision and machine consumption.
 | Understand the data pipeline | `what/pipeline.md` |
 | HTTPS Prometheus metrics (OLS-3656) | `what/https-metrics.md` |
 | Understand trace data collection, native FileExporter JSONL, and rotation risks | `what/data-collection.md` |
+| [PLANNED: OLS-4493] Understand the in-Collector Dataverse upload of Agentic traces | `what/dataverse-exporter.md` |
 
 ## Conventions
 

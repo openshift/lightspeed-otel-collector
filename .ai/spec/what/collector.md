@@ -16,6 +16,7 @@ Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTele
      - `debugexporter` (standard) — logs to stdout for development
      - `nopexporter` (standard) — silently drops data (used for pipelines that must exist but have no backend)
      - `fileexporter` (standard contrib v0.159.0; alpha trace support) — writes routed OTLP traces as native JSONL; see `what/data-collection.md`
+     - [PLANNED: OLS-4493] `dataverseexporter` (custom, this repo) replaces `fileexporter`, which is removed from the manifest — batches routed Agentic traces in memory and uploads them to the Red Hat ingress; see `what/dataverse-exporter.md`
    - **Processors:** `batchprocessor` — accumulates records before export
    - **Connectors:** `routingconnector` — routes telemetry to different pipelines based on OTTL conditions
    - **Extensions:**
@@ -39,6 +40,7 @@ Custom OpenTelemetry Collector for OpenShift Lightspeed. Built with the OpenTele
      - _Current behavior_: metrics are silently dropped.
 
 8. Both reference configurations route resources whose `service.name` exactly matches `lightspeed-agentic-operator` or `lightspeed-agentic-sandbox` through `routing/data_collection` to `traces/data_collection`. That pipeline writes native trace JSONL with the stock FileExporter to `/var/lib/lightspeed-data/otel/traces.jsonl`, with directory creation enabled and size rotation at 1 MiB, up to 100 backups, and a one-day age limit. See `what/data-collection.md` for complete file behavior.
+   - [PLANNED: OLS-4493] `traces/data_collection` exports to `dataverse` instead of `file/data_collection`; the reference configurations drop the FileExporter block. See `what/dataverse-exporter.md`.
 
 ### Deployment
 
@@ -57,6 +59,7 @@ All external communication channels use TLS:
 - Internal Prometheus metrics (HTTPS `:8888`) — same serving cert; reverse-proxied via `https_metrics` extension
 - PostgreSQL connections — `sslmode=require` in DSN
 - Trace export (OTLP gRPC) — system CA bundle (TLS enabled by default)
+- [PLANNED: OLS-4493] Dataverse ingress upload and Kubernetes API reads (`dataverse` exporter) — minimum TLS version and cipher suites from configuration; upload trusts `tls.ca_file`, API reads trust the ServiceAccount CA
 
 In OpenShift, the serving certificate is injected by `service-ca`.
 
@@ -79,6 +82,7 @@ The OTel Collector starts extensions before pipelines. The `postgres_admin` exte
 16. For OTLP logs sent to PostgreSQL, the reference exporter uses retry with exponential backoff and the configured `file_storage` sending queue.
 17. Persistence of the PostgreSQL log queue across restarts depends on its configured storage volume; loss of that volume can lose queued logs.
 18. The FileExporter writes the routed traces to the configured native JSONL source path. Its rotation, retention, restart, and write-failure behavior is specified in `what/data-collection.md`.
+   - [PLANNED: OLS-4493] Replaced: the `dataverse` exporter holds routed traces in its in-memory queue; the queue and open batch are lost when the process stops. See `what/dataverse-exporter.md`.
 
 ## Container Image
 
