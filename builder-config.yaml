@@ -18,6 +18,11 @@ exporters:
   - gomod: github.com/openshift/lightspeed-otel-collector/postgresexporter v0.0.0
     path: ./postgresexporter
 
+  # Custom Dataverse exporter — pushes Agentic trace batches to the Red Hat
+  # Dataverse ingress API (OLS-4493 Phase 2.1).
+  - gomod: github.com/openshift/lightspeed-otel-collector/dataverseexporter v0.0.0
+    path: ./dataverseexporter
+
   # Standard FileExporter — writes matching traces as native OTLP JSONL.
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.159.0
 

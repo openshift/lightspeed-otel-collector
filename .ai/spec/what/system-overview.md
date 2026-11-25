@@ -2,8 +2,8 @@
 
 The Lightspeed OTel Collector is a custom OpenTelemetry Collector distribution
 for OpenShift Lightspeed. The reference configurations ingest OTLP logs and
-traces, route them to their configured destinations, and write native trace
-JSONL for resources from the two allowlisted services.
+traces, route them to their configured destinations, and export traces from
+the two allowlisted services to the Red Hat Dataverse ingress.
 
 ## Behavioral Rules
 
@@ -27,24 +27,25 @@ JSONL for resources from the two allowlisted services.
 
 ### Trace Data Collection
 
-10. The trace data collection route matches resources whose `service.name` is
-    exactly `lightspeed-agentic-operator` or `lightspeed-agentic-sandbox` and
-    sends their traces through `routing/data_collection` and `traces/data_collection` to the
-    stock FileExporter. It retains native OTLP resource, scope, span, and event
-    structure. See `what/data-collection.md` for file settings and
-    operational behavior.
+10. [PLANNED: OLS-4493] The trace data collection route matches resources
+    whose `service.name` is exactly `lightspeed-agentic-operator` or
+    `lightspeed-agentic-sandbox` and sends their traces through
+    `routing/data_collection` and `traces/data_collection` to the `dataverse`
+    exporter. It retains native OTLP resource, scope, span, and event
+    structure. See `what/data-collection.md` for the exporter, upload, and
+    failure contract.
 
 ### Resilience
 
-11. The PostgreSQL log branch is buffered through its configured queue; the
-    trace data collection branch writes through FileExporter and uses its configured
-    source-file lifecycle.
-12. The FileExporter uses size-triggered rotation at the configured
-    `rotation.max_megabytes` MiB threshold and applies configured
-    `max_backups` and `max_days` retention criteria. These settings are
-    independent of consumer upload status and do not impose a hard disk
-    quota; write failures may propagate through a trace request even if a
-    sibling destination already accepted the same batch. See
+11. [PLANNED: OLS-4493] The PostgreSQL log branch is buffered through its
+    configured queue; the trace data collection branch batches in the
+    `dataverse` exporter's memory queue and uploads to the ingress service
+    with retry and counted-drop semantics.
+12. [PLANNED: OLS-4493] The dataverse exporter classifies upload errors as
+    retryable or permanent, swallows queue-full conditions for fan-out
+    isolation, resolves credentials lazily over the in-cluster API, and
+    bounds memory by queue size. Failures are silent to producers; drops
+    are visible in the exporter's drop counters. See
     `what/data-collection.md`.
 13. The Collector exposes its standard health check on port 13133 and serves
     internal Prometheus metrics over HTTPS on port 8888.
@@ -53,12 +54,11 @@ JSONL for resources from the two allowlisted services.
 
 Configuration follows standard OTel Collector YAML — receivers, processors,
 exporters, connectors, and pipelines. See `what/collector.md` for reference
-configuration and `what/data-collection.md` for native trace-file
-behavior and standalone testing.
+configuration and `what/data-collection.md` for the dataverse exporter
+contract and standalone testing.
 
 ## Scope Boundary
 
-The Collector owns the native JSONL source files and their retention.
-The downstream interface is closed rotated files on a read-only source mount.
-Conversion, upload, and ledger state belong to the consuming component; see
-`what/data-collection.md` for this integration contract.
+The Collector owns trace selection, batching, packaging, and upload to the
+Red Hat ingress. Dataverse data products own extraction, deduplication, and
+analytics; see `what/data-collection.md` for the integration contract.
