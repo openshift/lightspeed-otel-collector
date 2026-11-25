@@ -33,6 +33,8 @@ JSONL for resources from the two allowlisted services.
     stock FileExporter. It retains native OTLP resource, scope, span, and event
     structure. See `what/data-collection.md` for file settings and
     operational behavior.
+    [PLANNED: OLS-4493] The route sends selected traces to the `dataverse`
+    exporter instead; see `what/dataverse-exporter.md`.
 
 ### Resilience
 
@@ -46,6 +48,10 @@ JSONL for resources from the two allowlisted services.
     quota; write failures may propagate through a trace request even if a
     sibling destination already accepted the same batch. See
     `what/data-collection.md`.
+    [PLANNED: OLS-4493] Rules 11-12 for traces are replaced: the trace data
+    collection branch is buffered in the `dataverse` exporter's in-memory
+    queue with retries. Queue-full and upload failures never fail the
+    producer request; see `what/dataverse-exporter.md`.
 13. The Collector exposes its standard health check on port 13133 and serves
     internal Prometheus metrics over HTTPS on port 8888.
 
@@ -62,3 +68,7 @@ The Collector owns the native JSONL source files and their retention.
 The downstream interface is closed rotated files on a read-only source mount.
 Conversion, upload, and ledger state belong to the consuming component; see
 `what/data-collection.md` for this integration contract.
+
+[PLANNED: OLS-4493] The Collector owns trace upload to the Red Hat ingress
+through the `dataverse` exporter. No trace files and no downstream consumer
+interface remain.
