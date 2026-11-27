@@ -3,8 +3,8 @@ module github.com/openshift/lightspeed-otel-collector/postgresexporter
 go 1.25.8
 
 require (
-	github.com/jackc/pgx/v5 v5.10.0
-	github.com/pashagolub/pgxmock/v5 v5.1.0
+	github.com/jackc/pgx/v5 v5.13.0
+	github.com/pashagolub/pgxmock/v6 v6.0.0
 	go.opentelemetry.io/collector/component v1.65.0
 	go.opentelemetry.io/collector/config/configoptional v1.65.0
 	go.opentelemetry.io/collector/config/configretry v1.65.0
@@ -24,7 +24,7 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/puddle/v2 v2.2.2 // indirect
+	github.com/jackc/puddle/v2 v2.2.3 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/knadh/koanf/maps v0.1.3 // indirect
 	github.com/knadh/koanf/providers/confmap v1.0.1 // indirect
