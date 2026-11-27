@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pashagolub/pgxmock/v5"
+	"github.com/pashagolub/pgxmock/v6"
 	"go.uber.org/zap"
 )
 
